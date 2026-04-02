@@ -690,6 +690,63 @@ tr:hover td { background: #f8f9fb; }
   /* Modal responsive */
   .modal-content { width: 95%; max-height: 90vh; overflow-y: auto; }
 
+  /* Modal responsive */
+  .modal-content { width: 95%; max-height: 90vh; overflow-y: auto; }
+
+  /* Clearer mobile navigation */
+  .nav-link {
+    padding: 14px 20px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.85); /* Higher contrast */
+  }
+
+  /* Close button prominence */
+  #sidebar-close-btn {
+    opacity: 0.8;
+    color: #fff !important;
+    padding: 12px !important;
+  }
+
+  .nav-link svg {
+    width: 22px;
+    height: 22px;
+    opacity: 0.9;
+  }
+
+  .nav-link.active {
+    background: rgba(41, 128, 185, 0.35);
+    color: #fff;
+    border-right-width: 4px;
+  }
+
+  .nav-link.active svg {
+    color: var(--accent-light);
+    opacity: 1;
+  }
+
+  .nav-section-label {
+    padding: 24px 20px 8px; /* More breathing room */
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .btn-logout {
+    padding: 12px;
+    font-size: 15px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(231, 76, 60, 0.25);
+    border: 1px solid rgba(231, 76, 60, 0.5);
+  }
+
+  .btn-logout svg {
+    width: 18px;
+    height: 18px;
+  }
+
   /* Login responsive */
   .login-card { padding: 24px 20px; }
   .login-card h1 { font-size: 18px; }
