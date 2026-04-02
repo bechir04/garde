@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: garde-backend
+    runtime: node
+    plan: free # Can be changed to 'starter' for more resources
+    region: frankfurt # Preferred for better speed/location
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npx prisma migrate deploy && npx prisma db seed && npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        fromDatabase:
+          name: garde-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 3001
+
+databases:
+  - name: garde-db
+    plan: free
+    region: frankfurt

@@ -1,0 +1,5 @@
+# Backend ignores
+node_modules/
+dist/
+.env
+*.log
