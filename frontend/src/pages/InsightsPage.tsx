@@ -191,7 +191,7 @@ export default function InsightsPage() {
       )}
 
       {/* ── Row: Anomalies + Time Slots ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
 
         {/* Anomalies */}
         <div className="card">
@@ -213,7 +213,7 @@ export default function InsightsPage() {
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: `${severityColors[a.severity]}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <AlertTriangle size={18} color={severityColors[a.severity]} />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{a.governorateName}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                       {a.currentCount} حادث · معدل: {a.averageCount}/شهر
@@ -245,8 +245,7 @@ export default function InsightsPage() {
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{slot.label}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-                      <span style={{ fontWeight: 700 }}>{slot.count} حادث ({slot.pct}%)</span>
-                      {slot.deaths > 0 && <span style={{ color: 'var(--danger)' }}>{slot.deaths} وفاة</span>}
+                      <span style={{ fontWeight: 700 }}>{slot.count} (<span style={{ fontSize: 10 }}>{slot.pct}%</span>)</span>
                     </div>
                   </div>
                   <MiniBar pct={slot.pct} color={colors[i]} />
@@ -258,7 +257,7 @@ export default function InsightsPage() {
       </div>
 
       {/* ── Row: Cause Lethality + Weekday ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '3fr 2fr', gap: 20, marginBottom: 20 }}>
 
         {/* Cause lethality */}
         <div className="card">

@@ -59,7 +59,7 @@ export default function StatisticsPage() {
         {/* By Governorate */}
         <div className="chart-card">
           <div className="chart-title">🏛️ الحوادث حسب الولاية (أعلى 10)</div>
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 450 : 400}>
             <BarChart 
               data={byGov} 
               layout="vertical" 
@@ -68,17 +68,17 @@ export default function StatisticsPage() {
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
               <XAxis 
                 type="number" 
-                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
                 axisLine={{ stroke: '#eee' }}
                 tickLine={false}
               />
               <YAxis 
                 dataKey="name" 
                 type="category" 
-                width={180}
+                width={window.innerWidth < 768 ? 100 : 180}
                 orientation="right"
                 interval={0}
-                tick={{ fontSize: 14, fontWeight: 600, fill: 'var(--text-primary)' }}
+                tick={{ fontSize: window.innerWidth < 768 ? 11 : 14, fontWeight: 600, fill: 'var(--text-primary)' }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -97,7 +97,7 @@ export default function StatisticsPage() {
                 fill="#1a5276" 
                 radius={[4, 0, 0, 4]} 
                 name="عدد الحوادث"
-                barSize={24}
+                barSize={window.innerWidth < 768 ? 18 : 24}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -106,15 +106,15 @@ export default function StatisticsPage() {
         {/* By Cause (Pie) */}
         <div className="chart-card">
           <div className="chart-title">⚠️ توزيع الأسباب</div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie
                 data={byCause}
                 dataKey="count"
                 nameKey="name"
                 cx="50%" cy="50%"
-                innerRadius={55}
-                outerRadius={90}
+                innerRadius={45}
+                outerRadius={75}
                 paddingAngle={3}
               >
                 {byCause.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -125,15 +125,13 @@ export default function StatisticsPage() {
               />
             </PieChart>
           </ResponsiveContainer>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8, maxHeight: 150, overflowY: 'auto' }}>
             {byCause.map((item, i) => {
-              const total = byCause.reduce((s, d) => s + d.count, 0);
-              const pct = total ? ((item.count / total) * 100).toFixed(0) : 0;
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: COLORS[i % COLORS.length], flexShrink: 0 }} />
                   <span style={{ flex: 1, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600, flexShrink: 0 }}>{item.count} ({pct}%)</span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600, flexShrink: 0 }}>{item.count}</span>
                 </div>
               );
             })}
@@ -143,17 +141,17 @@ export default function StatisticsPage() {
         {/* By Brand */}
         <div className="chart-card">
           <div className="chart-title">🚗 الحوادث حسب ماركة السيارة</div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 220 : 300}>
             <BarChart data={byBrand} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
               <XAxis 
                 dataKey="name" 
-                tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
                 axisLine={{ stroke: '#eee' }}
                 tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -161,7 +159,7 @@ export default function StatisticsPage() {
                 cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl' }}
               />
-              <Bar dataKey="count" fill="#e67e22" radius={[4, 4, 0, 0]} name="عدد الحوادث" barSize={30} />
+              <Bar dataKey="count" fill="#e67e22" radius={[4, 4, 0, 0]} name="عدد الحوادث" barSize={window.innerWidth < 768 ? 20 : 30} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -169,17 +167,17 @@ export default function StatisticsPage() {
         {/* By Time of Day */}
         <div className="chart-card">
           <div className="chart-title">🕐 توزيع الحوادث حسب ساعة اليوم</div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 220 : 300}>
             <BarChart data={byTime} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
               <XAxis 
                 dataKey="period" 
-                tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
                 axisLine={{ stroke: '#eee' }}
                 tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -187,7 +185,7 @@ export default function StatisticsPage() {
                 cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl' }}
               />
-              <Bar dataKey="accidents" fill="#27ae60" radius={[4, 4, 0, 0]} name="حوادث" barSize={30} />
+              <Bar dataKey="accidents" fill="#27ae60" radius={[4, 4, 0, 0]} name="حوادث" barSize={window.innerWidth < 768 ? 20 : 30} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -196,27 +194,27 @@ export default function StatisticsPage() {
       {/* Monthly Trends full-width */}
       <div className="chart-card" style={{ marginBottom: 24 }}>
         <div className="chart-title">📈 الاتجاه الشهري — الحوادث والوفيات والإصابات</div>
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={trends} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+        <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 220 : 320}>
+          <LineChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
             <XAxis 
               dataKey="period" 
-              tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+              tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
               axisLine={{ stroke: '#eee' }}
               tickLine={false}
             />
             <YAxis 
-              tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+              tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip 
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl' }}
+              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl', fontSize: 12 }}
             />
-            <Legend verticalAlign="top" height={36} iconType="circle" />
-            <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="حوادث" />
-            <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="وفيات" />
-            <Line type="monotone" dataKey="injuries" stroke="#f39c12" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="إصابات" />
+            <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+            <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={window.innerWidth < 768 ? 2 : 3} dot={{ r: 3 }} activeDot={{ r: 5 }} name="حوادث" />
+            <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={window.innerWidth < 768 ? 2 : 3} dot={{ r: 3 }} activeDot={{ r: 5 }} name="وفيات" />
+            <Line type="monotone" dataKey="injuries" stroke="#f39c12" strokeWidth={window.innerWidth < 768 ? 2 : 3} dot={{ r: 3 }} activeDot={{ r: 5 }} name="إصابات" />
           </LineChart>
         </ResponsiveContainer>
       </div>

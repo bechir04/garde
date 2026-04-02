@@ -133,7 +133,7 @@ export default function AccidentsListPage() {
 
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="filters-bar">
-          <div className="form-group">
+          <div className="form-group" style={{ flex: '1 1 100%', minWidth: '100%' }}>
             <div style={{ position: 'relative' }}>
               <Search size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input
@@ -145,22 +145,22 @@ export default function AccidentsListPage() {
               />
             </div>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: '1 1 180px' }}>
             <select className="form-select" value={governorateId} onChange={(e) => updateFilter('governorateId', e.target.value)}>
               <option value="">كل الولايات</option>
               {governorates.map((g: any) => <option key={g.id} value={g.id}>{g.nameAr}</option>)}
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: '1 1 180px' }}>
             <select className="form-select" value={causeId} onChange={(e) => updateFilter('causeId', e.target.value)}>
               <option value="">كل الأسباب</option>
               {causes.map((c: any) => <option key={c.id} value={c.id}>{c.nameAr}</option>)}
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: '1 1 140px' }}>
             <input type="date" className="form-input" value={dateFrom} onChange={(e) => updateFilter('dateFrom', e.target.value)} />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: '1 1 140px' }}>
             <input type="date" className="form-input" value={dateTo} onChange={(e) => updateFilter('dateTo', e.target.value)} />
           </div>
         </div>

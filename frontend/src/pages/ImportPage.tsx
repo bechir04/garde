@@ -175,17 +175,17 @@ export default function ImportPage() {
         {previewData && (
           <div style={{ marginTop: 16 }}>
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>ملخص المعاينة</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ padding: 16, background: '#f8f9fb', borderRadius: 8, textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700 }}>{previewData.totalRows}</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? 20 : 24, fontWeight: 700 }}>{previewData.totalRows}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>إجمالي الأسطر</div>
               </div>
               <div style={{ padding: 16, background: 'rgba(39,174,96,0.06)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 8, textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--success)' }}>{previewData.validRows}</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? 20 : 24, fontWeight: 700, color: 'var(--success)' }}>{previewData.validRows}</div>
                 <div style={{ fontSize: 12, color: 'var(--success)' }}>أسطر صالحة للاستيراد</div>
               </div>
               <div style={{ padding: 16, background: 'rgba(235,87,87,0.06)', border: '1px solid rgba(235,87,87,0.2)', borderRadius: 8, textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--danger)' }}>{previewData.invalidRows}</div>
+                <div style={{ fontSize: window.innerWidth < 768 ? 20 : 24, fontWeight: 700, color: 'var(--danger)' }}>{previewData.invalidRows}</div>
                 <div style={{ fontSize: 12, color: 'var(--danger)' }}>تحتوي على أخطاء (سيتم تجاهلها)</div>
               </div>
             </div>

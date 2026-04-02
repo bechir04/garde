@@ -75,15 +75,15 @@ export default function DashboardPage() {
       <div className="charts-grid">
         <div className="chart-card">
           <div className="chart-title">توزيع الحوادث حسب السبب</div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 180 : 200}>
             <PieChart>
               <Pie
                 data={byCause}
                 dataKey="count"
                 nameKey="name"
                 cx="50%" cy="50%"
-                innerRadius={55}
-                outerRadius={90}
+                innerRadius={window.innerWidth < 768 ? 45 : 55}
+                outerRadius={window.innerWidth < 768 ? 75 : 90}
                 paddingAngle={3}
               >
                 {byCause.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -95,7 +95,7 @@ export default function DashboardPage() {
             </PieChart>
           </ResponsiveContainer>
           {/* Clean legend */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8, maxHeight: 150, overflowY: 'auto' }}>
             {byCause.map((item, i) => {
               const total = byCause.reduce((s, d) => s + d.count, 0);
               const pct = total ? ((item.count / total) * 100).toFixed(0) : 0;
@@ -118,7 +118,7 @@ export default function DashboardPage() {
               <XAxis dataKey="period" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={{ direction: 'rtl', fontFamily: 'inherit', fontSize: 13 }} />
-              <Legend formatter={(v) => v === 'accidents' ? 'حوادث' : 'وفيات'} />
+              <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
               <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={2} dot={false} name="accidents" />
               <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={2} dot={false} name="deaths" />
             </LineChart>
