@@ -89,7 +89,7 @@ export default function DashboardPage() {
                 {byCause.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
               </Pie>
               <Tooltip
-                formatter={(value: any, name: string) => [value + ' حادث', name]}
+                formatter={(value: any, name: any) => [value + ' حادث', name]}
                 contentStyle={{ direction: 'rtl', fontFamily: 'inherit', fontSize: 13 }}
               />
             </PieChart>
