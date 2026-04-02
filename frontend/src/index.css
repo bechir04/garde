@@ -667,11 +667,21 @@ tr:hover td { background: #f8f9fb; }
   .sidebar {
     width: 280px;
     right: -280px; /* Hide off-screen by default in RTL */
+    z-index: 1000 !important; /* Above EVERYTHING */
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto !important;
   }
 
   .sidebar.open {
     right: 0;
+  }
+
+  .mobile-overlay {
+    z-index: 999; /* Just below sidebar */
+  }
+
+  .mobile-header {
+    z-index: 900; /* Below overlay and sidebar when open */
   }
 
   .main-content {
@@ -690,10 +700,11 @@ tr:hover td { background: #f8f9fb; }
   /* Modal responsive */
   .modal-content { width: 95%; max-height: 90vh; overflow-y: auto; }
 
-  /* Modal responsive */
-  .modal-content { width: 95%; max-height: 90vh; overflow-y: auto; }
-
   /* Clearer mobile navigation */
+  .sidebar {
+    z-index: 1001; /* Ensure it's above the overlay (1000) */
+  }
+
   .nav-link {
     padding: 14px 20px;
     font-size: 15px;
@@ -705,6 +716,7 @@ tr:hover td { background: #f8f9fb; }
     opacity: 0.8;
     color: #fff !important;
     padding: 12px !important;
+    z-index: 1002;
   }
 
   .nav-link svg {
