@@ -37,6 +37,21 @@ export class AnalyticsController {
     });
   }
 
+  @Get('by-city')
+  getByCity(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByCity({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
+  }
+
   @Get('by-cause')
   getByCause(
     @Query('dateFrom') dateFrom?: string,

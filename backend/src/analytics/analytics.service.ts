@@ -85,6 +85,39 @@ export class AnalyticsService {
     }));
   }
 
+  async getByCity(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
+    // Scope to a specific governorate if provided, otherwise show all cities
+    if (filters?.governorateId) {
+      where.governorateId = Number(filters.governorateId);
+    }
+    // Only include accidents that have a cityId assigned
+    if (!where.cityId) {
+      where.cityId = { not: null };
+    }
+
+    const results = await this.prisma.accident.groupBy({
+      by: ['cityId'],
+      where,
+      _count: { id: true },
+      _sum: { deathsCount: true, injuriesCount: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    const cities = await this.prisma.city.findMany();
+    const cityMap = new Map(cities.map((c) => [c.id, c.nameAr]));
+
+    return results
+      .filter((r) => r.cityId !== null)
+      .map((r) => ({
+        cityId: r.cityId as number,
+        cityName: cityMap.get(r.cityId as number) || '',
+        accidentCount: r._count.id,
+        deathsCount: r._sum.deathsCount || 0,
+        injuriesCount: r._sum.injuriesCount || 0,
+      }));
+  }
+
   async getByCause(filters?: AnalyticsFilters) {
     const where = buildFilterWhere(filters || {});
 
