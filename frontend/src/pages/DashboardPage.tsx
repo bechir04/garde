@@ -119,8 +119,8 @@ export default function DashboardPage() {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={{ direction: 'rtl', fontFamily: 'inherit', fontSize: 13 }} />
               <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
-              <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={2} dot={false} name="accidents" />
-              <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={2} dot={false} name="deaths" />
+              <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={2} dot={false} name="الحوادث" />
+              <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={2} dot={false} name="الوفيات" />
             </LineChart>
           </ResponsiveContainer>
         </div>

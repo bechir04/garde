@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, GeoJSON, Tooltip, useMap, CircleMarker, Popup } from 'react-leaflet';
-import { getAnalyticsByGovernorate, getGovernorates } from '../api/services';
+import { getAnalyticsByGovernorate, getAnalyticsByCity, getGovernorates } from '../api/services';
 import type { AnalyticsFilters } from '../api/services';
-import { ArrowRight, Filter, Calendar, MapPin, Building2, RotateCcw, Layers } from 'lucide-react';
+import { ArrowRight, Filter, Calendar, MapPin, Building2, RotateCcw, Layers, ChevronDown } from 'lucide-react';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import tunisiaGeoJSON from '../data/tunisia-governorates.json';
 import 'leaflet/dist/leaflet.css';
@@ -15,6 +15,15 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
+
+function getMunColor(count: number, max: number): string {
+  if (max === 0 || count === 0) return '#bdc3c7';
+  const ratio = count / max;
+  if (ratio < 0.25) return '#f39c12';
+  if (ratio < 0.50) return '#e67e22';
+  if (ratio < 0.75) return '#d35400';
+  return '#c0392b';
+}
 
 function getColor(count: number, max: number): string {
   if (max === 0) return '#e8e8e8';
@@ -29,14 +38,6 @@ function getColor(count: number, max: number): string {
   return '#0b2545';
 }
 
-function getMunColor(count: number, max: number): string {
-  if (max === 0) return '#f39c12';
-  const ratio = count / max;
-  if (ratio < 0.25) return '#f39c12';
-  if (ratio < 0.50) return '#e67e22';
-  if (ratio < 0.75) return '#d35400';
-  return '#c0392b';
-}
 
 function MapController({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
@@ -48,6 +49,7 @@ export default function MapPage() {
   const navigate = useNavigate();
   const [governorates, setGovernorates] = useState<any[]>([]);
   const [stats, setStats] = useState<Record<number, { count: number; deaths: number; injuries: number }>>({});
+  const [munStats, setMunStats] = useState<Record<number, { count: number; deaths: number; injuries: number }>>({});
   const [loading, setLoading] = useState(true);
   const [hoveredGov, setHoveredGov] = useState<number | null>(null);
   const [showMunicipalities, setShowMunicipalities] = useState(true);
@@ -55,23 +57,32 @@ export default function MapPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AnalyticsFilters>({});
   const [selectedMunicipality, setSelectedMunicipality] = useState('');
+  const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 768);
 
   const showMunicipalityDropdown = filters.governorateId === '18';
   const maxCount = Math.max(...Object.values(stats).map((s) => s.count), 1);
-  const sidiBouzidStats = stats[18] || { count: 0, deaths: 0, injuries: 0 };
-  const munAvgCount = Math.round(sidiBouzidStats.count / SIDI_BOUZID_MUNICIPALITIES.length);
-  const munMaxCount = Math.max(munAvgCount, 1);
+  const munMaxCount = Math.max(...Object.values(munStats).map((s) => s.count), 1);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getAnalyticsByGovernorate(filters);
-      const map: Record<number, { count: number; deaths: number; injuries: number }> = {};
-      data.forEach((d: any) => {
+      const [govData, cityData] = await Promise.all([
+        getAnalyticsByGovernorate(filters),
+        getAnalyticsByCity({ ...filters, governorateId: '18' }),
+      ]);
+
+      const govMap: Record<number, { count: number; deaths: number; injuries: number }> = {};
+      govData.forEach((d: any) => {
         const gov = governorates.find((g) => g.nameAr === d.name);
-        if (gov) map[gov.id] = { count: d.count, deaths: d.deaths, injuries: d.injuries };
+        if (gov) govMap[gov.id] = { count: d.count, deaths: d.deaths, injuries: d.injuries };
       });
-      setStats(map);
+      setStats(govMap);
+
+      const munMap: Record<number, { count: number; deaths: number; injuries: number }> = {};
+      cityData.forEach((d: any) => {
+        munMap[d.cityId] = { count: d.count, deaths: d.deaths, injuries: d.injuries };
+      });
+      setMunStats(munMap);
     } finally {
       setLoading(false);
     }
@@ -175,7 +186,7 @@ export default function MapPage() {
             className={`btn ${showMunicipalities ? 'btn-primary' : 'btn-outline'} btn-sm`}
             onClick={() => setShowMunicipalities(!showMunicipalities)}
           >
-            <Layers size={14} /> البلديات
+            <Layers size={14} /> المعتمديات
           </button>
           <button className={`btn ${hasActiveFilters ? 'btn-primary' : 'btn-outline'} btn-sm`} onClick={() => setShowFilters(!showFilters)}>
             <Filter size={14} /> فلترة
@@ -261,27 +272,39 @@ export default function MapPage() {
           <MapController center={[34.0, 9.5]} zoom={7} />
 
           {showMunicipalities && SIDI_BOUZID_MUNICIPALITIES.map((mun) => {
-            const radius = Math.max(14, Math.min(28, 12 + munAvgCount * 0.3));
+            const ms = munStats[mun.id] || { count: 0, deaths: 0, injuries: 0 };
+            const radius = ms.count > 0 ? Math.max(10, Math.min(28, 8 + ms.count * 1.2)) : 10;
             return (
               <CircleMarker
                 key={mun.id}
                 center={[mun.lat, mun.lng]}
                 radius={radius}
-                fillColor={getMunColor(munAvgCount, munMaxCount)}
-                fillOpacity={0.85}
+                fillColor={getMunColor(ms.count, munMaxCount)}
+                fillOpacity={ms.count > 0 ? 0.85 : 0.45}
                 color="#fff"
-                weight={2.5}
+                weight={2}
               >
                 <Tooltip direction="top" offset={[0, -10]}>
                   <div style={{ textAlign: 'center', fontFamily: 'inherit', direction: 'rtl' }}>
                     <div style={{ fontWeight: 700, fontSize: 13 }}>{mun.nameAr}</div>
-                    <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>~{munAvgCount} حادث</div>
+                    {ms.count > 0
+                      ? <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>{ms.count} حادث · {ms.deaths} وفاة · {ms.injuries} جريح</div>
+                      : <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>لا توجد بيانات</div>
+                    }
                   </div>
                 </Tooltip>
                 <Popup>
-                  <div style={{ textAlign: 'center', fontFamily: 'inherit', direction: 'rtl', minWidth: 150 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{mun.nameAr}</div>
-                    <div style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>~{munAvgCount} حادث</div>
+                  <div style={{ textAlign: 'center', fontFamily: 'inherit', direction: 'rtl', minWidth: 160 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{mun.nameAr}</div>
+                    {ms.count > 0 ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10 }}>
+                        <div><div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary)' }}>{ms.count}</div><div style={{ fontSize: 10, color: '#888' }}>حوادث</div></div>
+                        <div><div style={{ fontSize: 18, fontWeight: 800, color: '#e74c3c' }}>{ms.deaths}</div><div style={{ fontSize: 10, color: '#888' }}>وفيات</div></div>
+                        <div><div style={{ fontSize: 18, fontWeight: 800, color: '#f39c12' }}>{ms.injuries}</div><div style={{ fontSize: 10, color: '#888' }}>جرحى</div></div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: '#999', marginBottom: 10 }}>لا توجد بيانات مسجلة</div>
+                    )}
                     <button
                       className="btn btn-primary btn-sm"
                       style={{ fontSize: 11, width: '100%' }}
@@ -296,41 +319,62 @@ export default function MapPage() {
           })}
         </MapContainer>
 
-        {/* Legend */}
+        {/* Legend — collapsible */}
         <div style={{
-          position: 'absolute', bottom: 30, left: 20, zIndex: 999,
-          background: '#fff', borderRadius: 12, padding: '14px 16px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: 170,
+          position: 'absolute', bottom: 20, left: 12, zIndex: 999,
+          background: '#fff', borderRadius: 12,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+          minWidth: legendOpen ? 164 : undefined,
+          overflow: 'hidden',
         }}>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>حوادث الولايات</div>
-          {legendSteps.map((step, i) => {
-            const next = legendSteps[i + 1];
-            if (next === undefined) return null;
-            const val = Math.round(step * maxCount);
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 3 }}>
-                <div style={{ width: 16, height: 12, borderRadius: 2, background: getColor(val, maxCount), flexShrink: 0, border: '1px solid rgba(0,0,0,0.1)' }} />
-                <span style={{ color: 'var(--text-secondary)' }}>{val}</span>
-              </div>
-            );
-          })}
+          {/* Title / toggle row */}
+          <button
+            onClick={() => setLegendOpen(!legendOpen)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 10, padding: '10px 14px', background: 'transparent', border: 'none',
+              cursor: 'pointer', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span>حوادث الولايات</span>
+            <ChevronDown size={14} style={{ transition: 'transform 0.2s', transform: legendOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0, color: 'var(--text-secondary)' }} />
+          </button>
 
-          {showMunicipalities && (
-            <>
-              <div style={{ borderTop: '1px solid var(--border)', margin: '10px 0 8px' }} />
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: '#e67e22' }}>بلديات سيدي بوزيد</div>
-              {[
-                { color: '#f39c12', label: 'منخفض' },
-                { color: '#e67e22', label: 'متوسط' },
-                { color: '#d35400', label: 'مرتفع' },
-                { color: '#c0392b', label: 'حرج' },
-              ].map((item) => (
-                <div key={item.color} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 3 }}>
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: item.color, border: '2px solid #fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', flexShrink: 0 }} />
-                  <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
-                </div>
-              ))}
-            </>
+          {/* Collapsible body */}
+          {legendOpen && (
+            <div style={{ padding: '0 14px 12px' }}>
+              {legendSteps.map((step, i) => {
+                const next = legendSteps[i + 1];
+                if (next === undefined) return null;
+                const val = Math.round(step * maxCount);
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 3 }}>
+                    <div style={{ width: 16, height: 11, borderRadius: 2, background: getColor(val, maxCount), flexShrink: 0, border: '1px solid rgba(0,0,0,0.1)' }} />
+                    <span style={{ color: 'var(--text-secondary)' }}>{val}</span>
+                  </div>
+                );
+              })}
+
+              {showMunicipalities && (
+                <>
+                  <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+                  <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: '#e67e22' }}>معتمديات سيدي بوزيد</div>
+                  {[
+                    { color: '#bdc3c7', label: 'لا بيانات' },
+                    { color: '#f39c12', label: 'منخفض' },
+                    { color: '#e67e22', label: 'متوسط' },
+                    { color: '#d35400', label: 'مرتفع' },
+                    { color: '#c0392b', label: 'حرج' },
+                  ].map((item) => (
+                    <div key={item.color} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, marginBottom: 3 }}>
+                      <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, border: '2px solid #fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', flexShrink: 0 }} />
+                      <span style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
           )}
         </div>
 

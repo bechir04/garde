@@ -176,9 +176,11 @@ export default function AccidentsListPage() {
             </select>
           </div>
           <div className="form-group" style={{ flex: '1 1 140px' }}>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>من تاريخ</label>
             <input type="date" className="form-input" value={dateFrom} onChange={(e) => updateFilter('dateFrom', e.target.value)} />
           </div>
           <div className="form-group" style={{ flex: '1 1 140px' }}>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>إلى تاريخ</label>
             <input type="date" className="form-input" value={dateTo} onChange={(e) => updateFilter('dateTo', e.target.value)} />
           </div>
         </div>

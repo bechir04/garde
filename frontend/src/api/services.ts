@@ -66,6 +66,17 @@ export const getAnalyticsByGovernorate = (filters?: AnalyticsFilters) =>
     }))
   );
 
+export const getAnalyticsByCity = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-city', { params: buildFilterParams(filters) }).then((r) =>
+    r.data.map((d: any) => ({
+      cityId: d.cityId,
+      name: d.cityName,
+      count: d.accidentCount,
+      deaths: d.deathsCount,
+      injuries: d.injuriesCount,
+    }))
+  );
+
 export const getAnalyticsByCause = (filters?: AnalyticsFilters) =>
   client.get('/analytics/by-cause', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({

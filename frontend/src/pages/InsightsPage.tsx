@@ -11,6 +11,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   BarChart, Bar, Cell,
 } from 'recharts';
+import { useDisplaySettings } from '../contexts/DisplaySettingsContext';
 
 const TrendIcon = ({ change }: { change: number | null }) => {
   if (change === null) return <Minus size={16} color="var(--text-secondary)" />;
@@ -54,6 +55,7 @@ const severityGaugeLabels = ['منخفض', 'متوسط', 'مرتفع', 'حرج']
 
 export default function InsightsPage() {
   const contentRef = useRef<HTMLDivElement>(null);
+  const { settings } = useDisplaySettings();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [governorates, setGovernorates] = useState<any[]>([]);
@@ -163,7 +165,7 @@ export default function InsightsPage() {
       XLSX.utils.book_append_sheet(wb, ws7, 'التوصيات');
     }
 
-    const fileName = `تقرير_التقييم_الاستخباراتي_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `تقرير_التقييم_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
@@ -186,8 +188,8 @@ export default function InsightsPage() {
       {/* ── Header ── */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">الاستخبارات الأمنية</h1>
-          <p className="page-subtitle">
+          <h1 className="page-title">التقييم الشامل</h1>
+          <p className="page-subtitle"> 
             {d?.period?.label} · تحليل {d?.totalAnalyzed?.toLocaleString('ar-TN') || 0} حادث مسجّل
           </p>
         </div>
@@ -200,12 +202,12 @@ export default function InsightsPage() {
       <div className="card" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 150 }}>
-            <label className="form-label" style={{ fontSize: 12 }}>من تاريخ</label>
-            <input type="date" className="form-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>من تاريخ</label>
+            <input type="date" className="form-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="اختر تاريخ البداية" />
           </div>
           <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 150 }}>
-            <label className="form-label" style={{ fontSize: 12 }}>إلى تاريخ</label>
-            <input type="date" className="form-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>إلى تاريخ</label>
+            <input type="date" className="form-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="اختر تاريخ النهاية" />
           </div>
           <div className="form-group" style={{ margin: 0, flex: 2, minWidth: 180 }}>
             <label className="form-label" style={{ fontSize: 12 }}>الولاية</label>
@@ -276,8 +278,10 @@ export default function InsightsPage() {
       )}
 
       {/* ── Severity Gauge + KPI Cards ── */}
+      {(settings.insights.gauge || settings.insights.kpi) && (
       <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '280px 1fr', gap: 20, marginBottom: 24 }}>
         {/* Severity Gauge */}
+        {settings.insights.gauge && (
         <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-secondary)' }}>مؤشر الخطورة</div>
           <div style={{ position: 'relative', width: 140, height: 80, overflow: 'hidden' }}>
@@ -311,8 +315,10 @@ export default function InsightsPage() {
           </div>
         </div>
 
+        )}
+
         {/* KPI Cards */}
-        {d?.comparison && (
+        {settings.insights.kpi && d?.comparison && (
           <div className="kpi-grid" style={{ marginBottom: 0 }}>
             {[
               { label: 'الحوادث', key: 'accidents', icon: <AlertTriangle size={20} />, cls: 'danger' },
@@ -339,6 +345,7 @@ export default function InsightsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* ── Tab Navigation ── */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#f0f2f5', borderRadius: 10, padding: 4, width: 'fit-content' }}>
@@ -369,7 +376,9 @@ export default function InsightsPage() {
       {activeTab === 'overview' && (
         <>
           {/* Anomalies + Time Slots */}
+          {(settings.insights.anomalies || settings.insights.timeSlots) && (
           <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
+            {settings.insights.anomalies && (
             <div className="card">
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <MapPin size={17} color="var(--danger)" /> بؤر التوتر المروري
@@ -404,7 +413,9 @@ export default function InsightsPage() {
                 </div>
               )}
             </div>
+            )}
 
+            {settings.insights.timeSlots && (
             <div className="card">
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Clock size={17} color="var(--primary)" /> توزيع الحوادث حسب الفترة
@@ -425,61 +436,69 @@ export default function InsightsPage() {
                     </div>
                   );
                 })}
-              </div>
+               </div>
             </div>
+            )}
           </div>
+          )}
 
-          {/* Cause Lethality + Weekday */}
-          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '3fr 2fr', gap: 20, marginBottom: 20 }}>
-            <div className="card">
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <AlertTriangle size={17} color="#e67e22" /> الأسباب حسب معدل الفتك
-              </h3>
-              {(!d?.causeLethality || d.causeLethality.length === 0) ? (
-                <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)', fontSize: 13 }}>لا توجد بيانات كافية</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {d.causeLethality.map((c: any, i: number) => (
-                    <div key={c.causeId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 22, height: 22, borderRadius: 6, background: i === 0 ? 'var(--danger)' : '#f0f2f5', color: i === 0 ? '#fff' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{i + 1}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.causeName}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                          <MiniBar pct={c.deathPct} color={i === 0 ? 'var(--danger)' : '#e67e22'} />
-                          <span style={{ fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{c.count} حادث</span>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'left', flexShrink: 0 }}>
-                        <div style={{ fontWeight: 800, fontSize: 15, color: c.deaths > 0 ? 'var(--danger)' : 'var(--text-secondary)' }}>{c.deaths}</div>
-                        <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>وفاة</div>
-                      </div>
-                    </div>
-                  ))}
+           {/* Cause Lethality + Weekday */}
+           {(settings.insights.causeLethality || settings.insights.weekday) && (
+           <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '3fr 2fr', gap: 20, marginBottom: 20 }}>
+             {settings.insights.causeLethality && (
+             <div className="card">
+               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                 <AlertTriangle size={17} color="#e67e22" /> الأسباب حسب معدل الفتك
+               </h3>
+               {(!d?.causeLethality || d.causeLethality.length === 0) ? (
+                 <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)', fontSize: 13 }}>لا توجد بيانات كافية</div>
+               ) : (
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                   {d.causeLethality.map((c: any, i: number) => (
+                     <div key={c.causeId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                       <div style={{ width: 22, height: 22, borderRadius: 6, background: i === 0 ? 'var(--danger)' : '#f0f2f5', color: i === 0 ? '#fff' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{i + 1}</div>
+                       <div style={{ flex: 1, minWidth: 0 }}>
+                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.causeName}</div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                           <MiniBar pct={c.deathPct} color={i === 0 ? 'var(--danger)' : '#e67e22'} />
+                           <span style={{ fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{c.count} حادث</span>
+                         </div>
+                       </div>
+                       <div style={{ textAlign: 'left', flexShrink: 0 }}>
+                         <div style={{ fontWeight: 800, fontSize: 15, color: c.deaths > 0 ? 'var(--danger)' : 'var(--text-secondary)' }}>{c.deaths}</div>
+                         <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>وفاة</div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+             )}
+
+             {settings.insights.weekday && (
+             <div className="card">
+               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                 <Calendar size={17} color="var(--primary)" /> الحوادث حسب اليوم
+               </h3>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                 {(d?.weekdayAnalysis || []).map((day: any, i: number) => {
+                   const isMax = d.weekdayAnalysis.reduce((m: any, x: any) => x.count > m.count ? x : m, d.weekdayAnalysis[0])?.day === day.day;
+                   return (
+                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                       <span style={{ fontSize: 12, width: 60, flexShrink: 0, fontWeight: isMax ? 700 : 400, color: isMax ? 'var(--danger)' : undefined }}>{day.day}</span>
+                       <MiniBar pct={day.pct} color={isMax ? 'var(--danger)' : 'var(--primary)'} />
+                       <span style={{ fontSize: 12, fontWeight: 600, width: 28, textAlign: 'left', flexShrink: 0, color: isMax ? 'var(--danger)' : undefined }}>{day.count}</span>
+                     </div>
+                   );
+                 })}
                 </div>
-              )}
-            </div>
-
-            <div className="card">
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Calendar size={17} color="var(--primary)" /> الحوادث حسب اليوم
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(d?.weekdayAnalysis || []).map((day: any, i: number) => {
-                  const isMax = d.weekdayAnalysis.reduce((m: any, x: any) => x.count > m.count ? x : m, d.weekdayAnalysis[0])?.day === day.day;
-                  return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12, width: 60, flexShrink: 0, fontWeight: isMax ? 700 : 400, color: isMax ? 'var(--danger)' : undefined }}>{day.day}</span>
-                      <MiniBar pct={day.pct} color={isMax ? 'var(--danger)' : 'var(--primary)'} />
-                      <span style={{ fontSize: 12, fontWeight: 600, width: 28, textAlign: 'left', flexShrink: 0, color: isMax ? 'var(--danger)' : undefined }}>{day.count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+             </div>
+             )}
+           </div>
+           )}
 
           {/* 6-month Trend */}
-          {d?.monthlyTrend && (
+          {settings.insights.monthlyTrend && d?.monthlyTrend && (
             <div className="chart-card" style={{ marginBottom: 20 }}>
               <div className="chart-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TrendingUp size={17} color="var(--primary)" /> اتجاه الحوادث — آخر 6 أشهر
@@ -502,7 +521,7 @@ export default function InsightsPage() {
           )}
 
           {/* Top Routes */}
-          {d?.topRoutes && d.topRoutes.length > 0 && (
+          {settings.insights.topRoutes && d?.topRoutes && d.topRoutes.length > 0 && (
             <div className="card" style={{ marginBottom: 20 }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Route size={17} color="var(--danger)" /> أخطر الطرق
@@ -535,7 +554,7 @@ export default function InsightsPage() {
       )}
 
       {/* ── Tab: Heatmap ── */}
-      {activeTab === 'heatmap' && (
+      {activeTab === 'heatmap' && settings.insights.heatmap && (
         <div className="card">
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Activity size={17} color="var(--primary)" /> خريطة حرارية — اليوم × الساعة
@@ -591,7 +610,7 @@ export default function InsightsPage() {
       )}
 
       {/* ── Tab: Brands ── */}
-      {activeTab === 'brands' && (
+      {activeTab === 'brands' && settings.insights.brands && (
         <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: 20 }}>
           <div className="card">
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -656,7 +675,7 @@ export default function InsightsPage() {
       )}
 
       {/* ── Recommendations ── */}
-      {d?.recommendations && d.recommendations.length > 0 && (
+      {settings.insights.recommendations && d?.recommendations && d.recommendations.length > 0 && (
         <div className="card" style={{ marginTop: 20 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Zap size={17} color="var(--accent)" /> التوصيات ذات الأولوية

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
-import logo from '../assets/garde national.png';
+import logo from '../assets/garde_national-removebg-preview.png';
 
 const SAVED_USERNAME_KEY = 'gn_saved_username';
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
           <img
             src={logo}
             alt="الحرس الوطني"
-            style={{ width: 100, height: 100, objectFit: 'contain' }}
+            style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))' }}
           />
         </div>
         <h1>نظام إدارة حوادث المرور</h1>

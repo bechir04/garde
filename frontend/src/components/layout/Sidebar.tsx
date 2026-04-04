@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDisplaySettings } from '../../contexts/DisplaySettingsContext';
 import {
   LayoutDashboard, Car, BarChart3, Upload, Lightbulb, LogOut,
-  Users, ClipboardList, X, Map, ChevronDown, BarChart2,
+  Users, ClipboardList, X, Map, ChevronDown, BarChart2, Settings,
 } from 'lucide-react';
-import logo from '../../assets/garde national.png';
+import logo from '../../assets/garde_national-removebg-preview.png';
 
 const mainNav = [
   { to: '/', label: 'لوحة القيادة', icon: LayoutDashboard, exact: true },
@@ -25,6 +26,7 @@ const otherNav = [
 const adminNav = [
   { to: '/users', label: 'المستخدمون', icon: Users, exact: false },
   { to: '/audit', label: 'سجل المراجعة', icon: ClipboardList, exact: false },
+  { to: '/display-settings', label: 'إعدادات العرض', icon: Settings, exact: false },
 ];
 
 interface SidebarProps {
@@ -34,8 +36,11 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
+  const { settings } = useDisplaySettings();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
+
+  const showMap = settings.stats.map;
 
   const isActive = (to: string, exact: boolean) =>
     exact ? location.pathname === to : location.pathname.startsWith(to);
@@ -74,11 +79,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <img
               src={logo}
               alt="الحرس الوطني"
-              style={{ width: 72, height: 72, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }}
+              style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
             />
           </div>
           <h1>الحرس الوطني</h1>
-          <p>نظام إدارة حوادث المرور</p>
+          <p>نظام إدارة حوادث المرور - سيدي بوزيد</p>
         </div>
 
         <nav className="sidebar-nav">
@@ -112,18 +117,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </button>
             {analyticsOpen && (
               <div style={{ padding: '4px 0 4px 16px' }}>
-                {analyticsNav.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={handleNavClick}
-                    className={`nav-link ${isActive(item.to, false) ? 'active' : ''}`}
-                    style={{ fontSize: 13, padding: '8px 16px', paddingLeft: 32 }}
-                  >
-                    <item.icon size={18} />
-                    <span>{item.label}</span>
-                  </NavLink>
-                ))}
+                {analyticsNav.map((item) => {
+                  if (item.to === '/map' && !showMap) return null;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      onClick={handleNavClick}
+                      className={`nav-link ${isActive(item.to, false) ? 'active' : ''}`}
+                      style={{ fontSize: 13, padding: '8px 16px', paddingLeft: 32 }}
+                    >
+                      <item.icon size={18} />
+                      <span>{item.label}</span>
+                    </NavLink>
+                  );
+                })}
               </div>
             )}
           </div>
