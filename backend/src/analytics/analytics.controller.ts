@@ -8,38 +8,109 @@ export class AnalyticsController {
   constructor(private analyticsService: AnalyticsService) {}
 
   @Get('summary')
-  getSummary() {
-    return this.analyticsService.getSummary();
+  getSummary(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getSummary({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('by-governorate')
-  getByGovernorate() {
-    return this.analyticsService.getByGovernorate();
+  getByGovernorate(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByGovernorate({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('by-cause')
-  getByCause() {
-    return this.analyticsService.getByCause();
+  getByCause(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByCause({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('by-brand')
-  getByBrand() {
-    return this.analyticsService.getByBrand();
+  getByBrand(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByBrand({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('by-month')
-  getByMonth() {
-    return this.analyticsService.getByMonth();
+  getByMonth(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByMonth({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('by-hour')
-  getByHour() {
-    return this.analyticsService.getByHour();
+  getByHour(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getByHour({
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('top-routes')
-  getTopRoutes(@Query('limit') limit?: number) {
-    return this.analyticsService.getTopRoutes(limit || 10);
+  getTopRoutes(
+    @Query('limit') limit?: number,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('governorateId') governorateId?: string,
+    @Query('cityId') cityId?: string,
+  ) {
+    return this.analyticsService.getTopRoutes(limit || 10, {
+      dateFrom,
+      dateTo,
+      governorateId: governorateId ? parseInt(governorateId, 10) : undefined,
+      cityId: cityId ? parseInt(cityId, 10) : undefined,
+    });
   }
 
   @Get('insights')

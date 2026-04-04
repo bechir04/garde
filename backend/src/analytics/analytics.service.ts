@@ -1,48 +1,76 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+export type AnalyticsFilters = {
+  dateFrom?: string;
+  dateTo?: string;
+  governorateId?: number;
+  cityId?: number;
+};
+
+function buildFilterWhere(filters: AnalyticsFilters): any {
+  const where: any = { deletedAt: null };
+  if (filters.dateFrom || filters.dateTo) {
+    where.accidentDate = {};
+    if (filters.dateFrom) where.accidentDate.gte = new Date(filters.dateFrom);
+    if (filters.dateTo) {
+      const end = new Date(filters.dateTo);
+      end.setHours(23, 59, 59, 999);
+      where.accidentDate.lte = end;
+    }
+  }
+  if (filters.governorateId) where.governorateId = Number(filters.governorateId);
+  if (filters.cityId) where.cityId = Number(filters.cityId);
+  return where;
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private prisma: PrismaService) {}
 
-  async getSummary() {
+  async getSummary(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
     const [totalAccidents, totals, recentAccidents] = await Promise.all([
-      this.prisma.accident.count({ where: { deletedAt: null } }),
+      this.prisma.accident.count({ where }),
       this.prisma.accident.aggregate({
-        where: { deletedAt: null },
-        _sum: { deathsCount: true, injuriesCount: true },
+        where,
+        _sum: { deathsCount: true },
       }),
       this.prisma.accident.findMany({
-        where: { deletedAt: null },
-        include: { governorate: true, cause: true },
+        where,
+        include: { governorate: true, cause: true, city: true },
         orderBy: { accidentDate: 'desc' },
         take: 5,
       }),
     ]);
 
-    const thisMonth = new Date();
-    thisMonth.setDate(1);
-    thisMonth.setHours(0, 0, 0, 0);
-
-    const monthlyCount = await this.prisma.accident.count({
-      where: { deletedAt: null, accidentDate: { gte: thisMonth } },
-    });
+    const monthlyCount = await this.prisma.accident.count({ where });
 
     return {
       totalAccidents,
       totalDeaths: totals._sum.deathsCount || 0,
-      totalInjuries: totals._sum.injuriesCount || 0,
       monthlyAccidents: monthlyCount,
       recentAccidents,
     };
   }
 
-  async getByGovernorate() {
+  async getByGovernorate(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
+    delete where.governorateId;
+    delete where.cityId;
+    if (filters?.cityId) {
+      const city = await this.prisma.city.findUnique({ where: { id: filters.cityId } });
+      if (city) where.governorateId = city.governorateId;
+    }
+    if (filters?.governorateId) {
+      where.governorateId = Number(filters.governorateId);
+    }
+
     const results = await this.prisma.accident.groupBy({
       by: ['governorateId'],
-      where: { deletedAt: null },
+      where,
       _count: { id: true },
-      _sum: { deathsCount: true, injuriesCount: true },
+      _sum: { deathsCount: true },
       orderBy: { _count: { id: 'desc' } },
     });
 
@@ -54,16 +82,17 @@ export class AnalyticsService {
       governorateName: govMap.get(r.governorateId) || '',
       accidentCount: r._count.id,
       deathsCount: r._sum.deathsCount || 0,
-      injuriesCount: r._sum.injuriesCount || 0,
     }));
   }
 
-  async getByCause() {
+  async getByCause(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
+
     const results = await this.prisma.accident.groupBy({
       by: ['causeId'],
-      where: { deletedAt: null },
+      where,
       _count: { id: true },
-      _sum: { deathsCount: true, injuriesCount: true },
+      _sum: { deathsCount: true },
       orderBy: { _count: { id: 'desc' } },
     });
 
@@ -75,27 +104,26 @@ export class AnalyticsService {
       causeName: causeMap.get(r.causeId) || '',
       accidentCount: r._count.id,
       deathsCount: r._sum.deathsCount || 0,
-      injuriesCount: r._sum.injuriesCount || 0,
     }));
   }
 
-  async getByBrand() {
+  async getByBrand(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
     const accidents = await this.prisma.accident.findMany({
-      where: { deletedAt: null },
-      select: { vehicleBrand1Id: true, vehicleBrand2Id: true, deathsCount: true, injuriesCount: true },
+      where,
+      select: { vehicleBrand1Id: true, vehicleBrand2Id: true, deathsCount: true },
     });
 
     const brands = await this.prisma.vehicleBrand.findMany();
     const brandMap = new Map(brands.map((b) => [b.id, b.nameAr]));
-    const stats = new Map<number, { count: number; deaths: number; injuries: number }>();
+    const stats = new Map<number, { count: number; deaths: number }>();
 
     for (const acc of accidents) {
       for (const brandId of [acc.vehicleBrand1Id, acc.vehicleBrand2Id]) {
         if (brandId) {
-          const existing = stats.get(brandId) || { count: 0, deaths: 0, injuries: 0 };
+          const existing = stats.get(brandId) || { count: 0, deaths: 0 };
           existing.count++;
           existing.deaths += acc.deathsCount;
-          existing.injuries += acc.injuriesCount;
           stats.set(brandId, existing);
         }
       }
@@ -107,26 +135,25 @@ export class AnalyticsService {
         brandName: brandMap.get(brandId) || '',
         accidentCount: s.count,
         deathsCount: s.deaths,
-        injuriesCount: s.injuries,
       }))
       .sort((a, b) => b.accidentCount - a.accidentCount);
   }
 
-  async getByMonth() {
+  async getByMonth(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
     const accidents = await this.prisma.accident.findMany({
-      where: { deletedAt: null },
-      select: { accidentDate: true, deathsCount: true, injuriesCount: true },
+      where,
+      select: { accidentDate: true, deathsCount: true },
       orderBy: { accidentDate: 'asc' },
     });
 
-    const monthly = new Map<string, { count: number; deaths: number; injuries: number }>();
+    const monthly = new Map<string, { count: number; deaths: number }>();
     for (const acc of accidents) {
       const d = new Date(acc.accidentDate);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const existing = monthly.get(key) || { count: 0, deaths: 0, injuries: 0 };
+      const existing = monthly.get(key) || { count: 0, deaths: 0 };
       existing.count++;
       existing.deaths += acc.deathsCount;
-      existing.injuries += acc.injuriesCount;
       monthly.set(key, existing);
     }
 
@@ -134,13 +161,13 @@ export class AnalyticsService {
       month,
       accidentCount: s.count,
       deathsCount: s.deaths,
-      injuriesCount: s.injuries,
     }));
   }
 
-  async getByHour() {
+  async getByHour(filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
     const accidents = await this.prisma.accident.findMany({
-      where: { deletedAt: null },
+      where,
       select: { accidentTime: true },
     });
 
@@ -154,32 +181,34 @@ export class AnalyticsService {
     return hourly;
   }
 
-  async getTopRoutes(limit = 10) {
+  async getTopRoutes(limit = 10, filters?: AnalyticsFilters) {
+    const where = buildFilterWhere(filters || {});
+    where.route = { not: null };
     const accidents = await this.prisma.accident.findMany({
-      where: { deletedAt: null, route: { not: null } },
-      select: { route: true, deathsCount: true, injuriesCount: true },
+      where,
+      select: { route: true, deathsCount: true },
     });
 
-    const routes = new Map<string, { count: number; deaths: number; injuries: number }>();
+    const routes = new Map<string, { count: number; deaths: number }>();
     for (const acc of accidents) {
       if (acc.route) {
-        const existing = routes.get(acc.route) || { count: 0, deaths: 0, injuries: 0 };
+        const existing = routes.get(acc.route) || { count: 0, deaths: 0 };
         existing.count++;
         existing.deaths += acc.deathsCount;
-        existing.injuries += acc.injuriesCount;
         routes.set(acc.route, existing);
       }
     }
 
     return Array.from(routes.entries())
-      .map(([route, s]) => ({ route, accidentCount: s.count, deathsCount: s.deaths, injuriesCount: s.injuries }))
+      .map(([route, s]) => ({ route, accidentCount: s.count, deathsCount: s.deaths }))
       .sort((a, b) => b.accidentCount - a.accidentCount)
       .slice(0, limit);
   }
 
-  async getIntelligence(filters: { dateFrom?: string; dateTo?: string; governorateId?: number }) {
+  async getIntelligence(filters: { dateFrom?: string; dateTo?: string; governorateId?: number; cityId?: number }) {
     const baseWhere: any = { deletedAt: null };
     if (filters.governorateId) baseWhere.governorateId = Number(filters.governorateId);
+    if (filters.cityId) baseWhere.cityId = Number(filters.cityId);
 
     const now = new Date();
     let periodStart: Date, periodEnd: Date, prevStart: Date, prevEnd: Date;
@@ -187,6 +216,10 @@ export class AnalyticsService {
     if (filters.dateFrom && filters.dateTo) {
       periodStart = new Date(filters.dateFrom);
       periodEnd = new Date(filters.dateTo);
+      // Auto-swap if dates are reversed
+      if (periodStart > periodEnd) {
+        [periodStart, periodEnd] = [periodEnd, periodStart];
+      }
       const len = periodEnd.getTime() - periodStart.getTime();
       prevEnd = new Date(periodStart.getTime() - 86400000);
       prevStart = new Date(prevEnd.getTime() - len);
@@ -195,6 +228,33 @@ export class AnalyticsService {
       periodEnd = now;
       prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+      const currentCount = await this.prisma.accident.count({
+        where: { ...baseWhere, accidentDate: { gte: periodStart, lte: periodEnd } },
+      });
+      if (currentCount === 0) {
+        const latestAccident = await this.prisma.accident.findFirst({
+          where: baseWhere,
+          select: { accidentDate: true },
+          orderBy: { accidentDate: 'desc' },
+        });
+        if (latestAccident) {
+          const latestDate = new Date(latestAccident.accidentDate);
+          const latestMonth = latestDate.getMonth();
+          const latestYear = latestDate.getFullYear();
+
+          // Use last 3 months of available data as current period
+          periodEnd = new Date(latestYear, latestMonth + 1, 0, 23, 59, 59);
+          periodStart = new Date(latestYear, latestMonth - 2, 1);
+          if (periodStart < new Date(latestYear, 0, 1)) periodStart = new Date(latestYear, 0, 1);
+
+          // Previous period: same duration before current period
+          const duration = periodEnd.getTime() - periodStart.getTime();
+          prevEnd = new Date(periodStart.getTime() - 86400000);
+          prevStart = new Date(prevEnd.getTime() - duration);
+          if (prevStart < new Date(latestYear - 2, 0, 1)) prevStart = new Date(latestYear - 2, 0, 1);
+        }
+      }
     }
 
     const [governorates, causes] = await Promise.all([
@@ -207,15 +267,15 @@ export class AnalyticsService {
     const [currentPeriod, prevPeriod, allAccidents] = await Promise.all([
       this.prisma.accident.findMany({
         where: { ...baseWhere, accidentDate: { gte: periodStart, lte: periodEnd } },
-        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, injuriesCount: true },
+        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, vehicleBrand1Id: true, vehicleBrand2Id: true, route: true },
       }),
       this.prisma.accident.findMany({
         where: { ...baseWhere, accidentDate: { gte: prevStart, lte: prevEnd } },
-        select: { governorateId: true, causeId: true, deathsCount: true, injuriesCount: true },
+        select: { governorateId: true, causeId: true, deathsCount: true },
       }),
       this.prisma.accident.findMany({
         where: baseWhere,
-        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, injuriesCount: true },
+        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, injuriesCount: true, vehicleBrand1Id: true, vehicleBrand2Id: true, route: true },
       }),
     ]);
 
@@ -224,8 +284,6 @@ export class AnalyticsService {
     const prevAcc = prevPeriod.length;
     const currDeaths = currentPeriod.reduce((s, a) => s + a.deathsCount, 0);
     const prevDeaths = prevPeriod.reduce((s, a) => s + a.deathsCount, 0);
-    const currInjuries = currentPeriod.reduce((s, a) => s + a.injuriesCount, 0);
-    const prevInjuries = prevPeriod.reduce((s, a) => s + a.injuriesCount, 0);
     const pct = (cur: number, prev: number) => prev === 0 ? null : Math.round(((cur - prev) / prev) * 100);
     const currLeth = currAcc > 0 ? +(currDeaths / currAcc).toFixed(3) : 0;
     const prevLeth = prevAcc > 0 ? +(prevDeaths / prevAcc).toFixed(3) : 0;
@@ -233,7 +291,6 @@ export class AnalyticsService {
     const comparison = {
       accidents:     { current: currAcc,      previous: prevAcc,      change: pct(currAcc, prevAcc) },
       deaths:        { current: currDeaths,   previous: prevDeaths,   change: pct(currDeaths, prevDeaths) },
-      injuries:      { current: currInjuries, previous: prevInjuries, change: pct(currInjuries, prevInjuries) },
       lethalityRate: { current: currLeth,     previous: prevLeth,     change: pct(Math.round(currLeth * 1000), Math.round(prevLeth * 1000)) },
     };
 
@@ -307,18 +364,18 @@ export class AnalyticsService {
     }));
 
     // 5. Cause lethality ranking
-    const causeStats = new Map<number, { count: number; deaths: number; injuries: number }>();
+    const causeStats = new Map<number, { count: number; deaths: number }>();
     for (const a of allAccidents) {
       if (a.causeId) {
-        const s = causeStats.get(a.causeId) || { count: 0, deaths: 0, injuries: 0 };
-        s.count++; s.deaths += a.deathsCount; s.injuries += a.injuriesCount;
+        const s = causeStats.get(a.causeId) || { count: 0, deaths: 0 };
+        s.count++; s.deaths += a.deathsCount;
         causeStats.set(a.causeId, s);
       }
     }
     const causeLethality = Array.from(causeStats.entries())
       .map(([id, s]) => ({
         causeId: id, causeName: causeMap.get(id) || '',
-        count: s.count, deaths: s.deaths, injuries: s.injuries,
+        count: s.count, deaths: s.deaths,
         deathRate: s.count > 0 ? +(s.deaths / s.count).toFixed(3) : 0,
         deathPct: s.count > 0 ? Math.round(s.deaths / s.count * 100) : 0,
       }))
@@ -335,7 +392,87 @@ export class AnalyticsService {
       return { month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label, count: items.length, deaths: items.reduce((s, a) => s + a.deathsCount, 0) };
     });
 
-    // 7. Priority recommendations
+    // 7. Heatmap: weekday × time-slot
+    const slotKeys = ['night', 'morning', 'afternoon', 'evening'];
+    const heatmapDayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const heatmap: { day: string; dayIndex: number; slot: string; label: string; count: number }[] = [];
+    const heatMapData: Record<string, number> = {};
+    for (const a of allAccidents) {
+      if (a.accidentTime) {
+        const h = parseInt(a.accidentTime.split(':')[0], 10);
+        const slot = h < 6 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+        const d = new Date(a.accidentDate).getDay();
+        const key = `${d}-${slot}`;
+        heatMapData[key] = (heatMapData[key] || 0) + 1;
+      }
+    }
+    for (let d = 0; d < 7; d++) {
+      for (const slot of slotKeys) {
+        const slotLabels: Record<string, string> = { night: '00–06', morning: '06–12', afternoon: '12–18', evening: '18–00' };
+        heatmap.push({ day: heatmapDayNames[d], dayIndex: d, slot, label: slotLabels[slot], count: heatMapData[`${d}-${slot}`] || 0 });
+      }
+    }
+
+    // 8. Top dangerous routes
+    const routeStats = new Map<string, { count: number; deaths: number; injuries: number }>();
+    for (const a of allAccidents) {
+      if (a.route) {
+        const s = routeStats.get(a.route) || { count: 0, deaths: 0, injuries: 0 };
+        s.count++; s.deaths += a.deathsCount; s.injuries += a.injuriesCount;
+        routeStats.set(a.route, s);
+      }
+    }
+    const topRoutes = Array.from(routeStats.entries())
+      .map(([route, s]) => ({ route, count: s.count, deaths: s.deaths, injuries: s.injuries }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+
+    // 9. Vehicle brand severity
+    const [brands] = await Promise.all([this.prisma.vehicleBrand.findMany()]);
+    const brandMap = new Map(brands.map((b) => [b.id, b.nameAr]));
+    const brandStats = new Map<number, { count: number; deaths: number; injuries: number }>();
+    for (const a of allAccidents) {
+      for (const brandId of [a.vehicleBrand1Id, a.vehicleBrand2Id]) {
+        if (brandId) {
+          const s = brandStats.get(brandId) || { count: 0, deaths: 0, injuries: 0 };
+          s.count++; s.deaths += a.deathsCount; s.injuries += a.injuriesCount;
+          brandStats.set(brandId, s);
+        }
+      }
+    }
+    const brandSeverity = Array.from(brandStats.entries())
+      .map(([id, s]) => ({
+        brandId: id, brandName: brandMap.get(id) || '',
+        count: s.count, deaths: s.deaths, injuries: s.injuries,
+        severityScore: s.count > 0 ? +(s.deaths * 3 + s.injuries * 1) / s.count : 0,
+      }))
+      .sort((a, b) => b.severityScore - a.severityScore)
+      .slice(0, 8);
+
+    // 10. Predictive forecast (simple moving average)
+    const last3Months = monthlyTrend.slice(-3).map((m) => m.count);
+    const avgLast3 = last3Months.length > 0 ? Math.round(last3Months.reduce((a, b) => a + b, 0) / last3Months.length) : 0;
+    const trendDirection = last3Months.length >= 2
+      ? last3Months[last3Months.length - 1] > last3Months[last3Months.length - 2] ? 'up' : last3Months[last3Months.length - 1] < last3Months[last3Months.length - 2] ? 'down' : 'stable'
+      : 'stable';
+    const forecast = {
+      nextMonthEstimate: avgLast3,
+      trendDirection,
+      confidence: last3Months.length >= 3 ? 'medium' : 'low',
+      warning: trendDirection === 'up' && avgLast3 > 0 ? `متوقع ارتفاع الحوادث الشهر القادم (~${avgLast3} حادث)` : null,
+    };
+
+    // 11. Severity index (0-100)
+    const severityIndex = allAccidents.length > 0
+      ? Math.min(100, Math.round(
+          (currAcc > 0 ? (currDeaths / currAcc) * 50 : 0) +
+          (allAccidents.length > 0 ? (allAccidents.filter((a) => a.deathsCount > 0).length / allAccidents.length) * 30 : 0) +
+          (comparison.accidents.change !== null && comparison.accidents.change > 0 ? Math.min(comparison.accidents.change, 20) : 0)
+        ))
+      : 0;
+    const severityLevel = severityIndex >= 70 ? 'حرج' : severityIndex >= 50 ? 'مرتفع' : severityIndex >= 30 ? 'متوسط' : 'منخفض';
+
+    // 12. Priority recommendations
     const recommendations: any[] = [];
     if (comparison.accidents.change !== null && comparison.accidents.change > 20)
       recommendations.push({ priority: 1, type: 'critical', title: 'ارتفاع حاد في الحوادث', detail: `ارتفعت الحوادث بنسبة ${comparison.accidents.change}% مقارنة بالفترة السابقة. يستلزم تدخلاً أمنياً فورياً.` });
@@ -354,6 +491,12 @@ export class AnalyticsService {
     if (peakDay)
       recommendations.push({ priority: 5, type: 'medium', title: `يوم ${peakDay.day} — أكثر الأيام حوادث`, detail: `${peakDay.count} حادث مسجّل. يُنصح بتعزيز التواجد الميداني في هذا اليوم.` });
 
+    if (topRoutes.length > 0)
+      recommendations.push({ priority: 6, type: 'high', title: `مراقبة مكثفة: ${topRoutes[0].route}`, detail: `أخطر طريق: ${topRoutes[0].count} حادث (${topRoutes[0].deaths} وفاة). يُنصح بتثبيت كاميرات مراقبة.` });
+
+    if (forecast.warning)
+      recommendations.push({ priority: 7, type: 'medium', title: 'توقعات الشهر القادم', detail: forecast.warning });
+
     return {
       period: { start: periodStart.toISOString().split('T')[0], end: periodEnd.toISOString().split('T')[0], label: filters.dateFrom ? 'الفترة المحددة' : 'الشهر الحالي مقابل الشهر الماضي' },
       comparison,
@@ -364,6 +507,12 @@ export class AnalyticsService {
       monthlyTrend,
       recommendations,
       totalAnalyzed: allAccidents.length,
+      heatmap,
+      topRoutes,
+      brandSeverity,
+      forecast,
+      severityIndex,
+      severityLevel,
     };
   }
 

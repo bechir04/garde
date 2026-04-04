@@ -108,14 +108,14 @@ export class ImportService {
       const dateVal    = pick('تاريخ الحادث', ' التاريخ', 'التاريخ', 'date', 'Date', 'تاريخ');
       const timeVal    = pick('الساعة', 'الوقت', 'وقت الحادث', 'time', 'Time');
       const govVal     = pickStr('الولاية', 'المحافظة', 'governorate', 'الولايه', 'ولاية', 'محافظة', 'Governorate');
-      const cityVal    = pickStr('البلدية', 'المدينة', 'city', 'City', 'بلدية', 'مدينة');
+      const cityVal    = pickStr('المعتمدية', 'البلدية', 'المدينة', 'city', 'City', 'معتمدية', 'بلدية', 'مدينة');
       const routeVal   = pickStr('الطريق', 'المحور', 'المسلك', 'route', 'Route', 'طريق');
       const kmVal      = pick('النقطة الكيلومترية', 'كلم', 'pk', 'PK', 'نقطة كيلومترية', 'المسافة الكيلومترية');
       const causeVal   = pickStr('السبب', 'سبب الحادث', 'الأسباب', 'cause', 'Cause');
       const brand1Val  = pickStr(' الوسيلة 1', 'الوسيلة 1', 'مركبة 1', 'العلامة 1', 'brand1', 'علامة المركبة 1');
       const brand2Val  = pickStr(' الوسيلة 2', 'الوسيلة 2', 'مركبة 2', 'العلامة 2', 'brand2', 'علامة المركبة 2');
       const deathsVal  = pick('عدد الوفيات', 'الوفيات', 'القتلى', 'deaths', 'Deaths');
-      const injuriesVal = pick('عدد الجرحى', 'الجرحى', 'الإصابات', 'injuries', 'Injuries', 'الجرحى والمصابين');
+      const injuriesVal = pick('عدد الجرحى', 'الجرحى', 'injuries', 'Injuries', 'الجرحى والمصابين');
       const descVal    = pickStr('الملاحظات', 'الوصف', 'ملاحظات', 'description', 'Description', 'تفاصيل');
 
       // Capture all extra columns as metadata (anything not handled above)
@@ -123,14 +123,14 @@ export class ImportService {
         'تاريخ الحادث', ' التاريخ', 'التاريخ', 'date', 'Date', 'تاريخ',
         'الساعة', 'الوقت', 'وقت الحادث', 'time', 'Time',
         'الولاية', 'المحافظة', 'governorate', 'الولايه', 'ولاية', 'محافظة', 'Governorate',
-        'البلدية', 'المدينة', 'city', 'City', 'بلدية', 'مدينة',
+        'المعتمدية', 'البلدية', 'المدينة', 'city', 'City', 'معتمدية', 'بلدية', 'مدينة',
         'الطريق', 'المحور', 'المسلك', 'route', 'Route', 'طريق',
         'النقطة الكيلومترية', 'كلم', 'pk', 'PK', 'نقطة كيلومترية', 'المسافة الكيلومترية',
         'السبب', 'سبب الحادث', 'الأسباب', 'cause', 'Cause',
         ' الوسيلة 1', 'الوسيلة 1', 'مركبة 1', 'العلامة 1', 'brand1', 'علامة المركبة 1',
         ' الوسيلة 2', 'الوسيلة 2', 'مركبة 2', 'العلامة 2', 'brand2', 'علامة المركبة 2',
         'عدد الوفيات', 'الوفيات', 'القتلى', 'deaths', 'Deaths',
-        'عدد الجرحى', 'الجرحى', 'الإصابات', 'injuries', 'Injuries', 'الجرحى والمصابين',
+        'عدد الجرحى', 'الجرحى', 'injuries', 'Injuries', 'الجرحى والمصابين',
         'الملاحظات', 'الوصف', 'ملاحظات', 'description', 'Description', 'تفاصيل',
         'رقم الحادث',
       ]);
@@ -388,7 +388,7 @@ export class ImportService {
       { header: 'تاريخ الحادث', key: 'date', width: 15 },
       { header: 'الساعة', key: 'time', width: 10 },
       { header: 'الولاية', key: 'gov', width: 20 },
-      { header: 'البلدية', key: 'city', width: 20 },
+      { header: 'المعتمدية', key: 'city', width: 20 },
       { header: 'الطريق', key: 'route', width: 25 },
       { header: 'النقطة الكيلومترية', key: 'km', width: 15 },
       { header: 'السبب', key: 'cause', width: 25 },

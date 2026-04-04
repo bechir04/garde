@@ -140,26 +140,32 @@ async function main() {
     { id: 39, nameAr: 'سبيطلة',          governorateId: 17 },
     // سيدي بوزيد
     { id: 40, nameAr: 'سيدي بوزيد',     governorateId: 18 },
-    { id: 41, nameAr: 'المكناسي',        governorateId: 18 },
+    { id: 41, nameAr: 'الرقاب',          governorateId: 18 },
+    { id: 42, nameAr: 'اولاد حفوز',      governorateId: 18 },
+    { id: 43, nameAr: 'السعيدة',         governorateId: 18 },
+    { id: 44, nameAr: 'المزونة',         governorateId: 18 },
+    { id: 45, nameAr: 'المكناسي',        governorateId: 18 },
+    { id: 46, nameAr: 'منزل بوزيان',     governorateId: 18 },
+    { id: 47, nameAr: 'سوق الجديد',      governorateId: 18 },
     // قابس
-    { id: 42, nameAr: 'قابس المدينة',   governorateId: 19 },
-    { id: 43, nameAr: 'مطماطة',          governorateId: 19 },
+    { id: 48, nameAr: 'قابس المدينة',   governorateId: 19 },
+    { id: 49, nameAr: 'مطماطة',          governorateId: 19 },
     // مدنين
-    { id: 44, nameAr: 'مدنين المدينة',   governorateId: 20 },
-    { id: 45, nameAr: 'جربة',            governorateId: 20 },
-    { id: 46, nameAr: 'بن قردان',        governorateId: 20 },
+    { id: 50, nameAr: 'مدنين المدينة',   governorateId: 20 },
+    { id: 51, nameAr: 'جربة',            governorateId: 20 },
+    { id: 52, nameAr: 'بن قردان',        governorateId: 20 },
     // تطاوين
-    { id: 47, nameAr: 'تطاوين المدينة',  governorateId: 21 },
-    { id: 48, nameAr: 'غمراسن',          governorateId: 21 },
+    { id: 53, nameAr: 'تطاوين المدينة',  governorateId: 21 },
+    { id: 54, nameAr: 'غمراسن',          governorateId: 21 },
     // قفصة
-    { id: 49, nameAr: 'قفصة المدينة',   governorateId: 22 },
-    { id: 50, nameAr: 'الرديف',          governorateId: 22 },
+    { id: 55, nameAr: 'قفصة المدينة',   governorateId: 22 },
+    { id: 56, nameAr: 'الرديف',          governorateId: 22 },
     // توزر
-    { id: 51, nameAr: 'توزر المدينة',   governorateId: 23 },
-    { id: 52, nameAr: 'نفطة',            governorateId: 23 },
+    { id: 57, nameAr: 'توزر المدينة',   governorateId: 23 },
+    { id: 58, nameAr: 'نفطة',            governorateId: 23 },
     // قبلي
-    { id: 53, nameAr: 'قبلي المدينة',   governorateId: 24 },
-    { id: 54, nameAr: 'دوز',             governorateId: 24 },
+    { id: 59, nameAr: 'قبلي المدينة',   governorateId: 24 },
+    { id: 60, nameAr: 'دوز',             governorateId: 24 },
   ];
 
   for (const city of cities) {

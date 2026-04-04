@@ -120,6 +120,10 @@ export class AccidentQueryDto {
 
   @IsOptional()
   @IsInt()
+  cityId?: number;
+
+  @IsOptional()
+  @IsInt()
   causeId?: number;
 
   @IsOptional()

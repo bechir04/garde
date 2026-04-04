@@ -21,11 +21,12 @@ export class AccidentsService {
   };
 
   async findAll(query: AccidentQueryDto) {
-    const { page = 1, limit = 20, search, governorateId, causeId, brandId, dateFrom, dateTo, sortBy = 'accidentDate', sortOrder = 'desc' } = query;
+    const { page = 1, limit = 20, search, governorateId, cityId, causeId, brandId, dateFrom, dateTo, sortBy = 'accidentDate', sortOrder = 'desc' } = query;
 
     const where: Prisma.AccidentWhereInput = { deletedAt: null };
 
     if (governorateId) where.governorateId = governorateId;
+    if (cityId) where.cityId = cityId;
     if (causeId) where.causeId = causeId;
     if (brandId) {
       where.OR = [{ vehicleBrand1Id: brandId }, { vehicleBrand2Id: brandId }];
