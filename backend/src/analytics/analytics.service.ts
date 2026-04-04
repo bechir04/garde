@@ -34,7 +34,7 @@ export class AnalyticsService {
       this.prisma.accident.count({ where }),
       this.prisma.accident.aggregate({
         where,
-        _sum: { deathsCount: true },
+        _sum: { deathsCount: true, injuriesCount: true },
       }),
       this.prisma.accident.findMany({
         where,
@@ -49,6 +49,7 @@ export class AnalyticsService {
     return {
       totalAccidents,
       totalDeaths: totals._sum.deathsCount || 0,
+      totalInjuries: totals._sum.injuriesCount || 0,
       monthlyAccidents: monthlyCount,
       recentAccidents,
     };
