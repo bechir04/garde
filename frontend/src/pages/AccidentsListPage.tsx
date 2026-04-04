@@ -214,10 +214,6 @@ export default function AccidentsListPage() {
                           />
                         )}
                         <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>#{(page - 1) * limit + idx + 1}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {new Date(a.accidentDate).toLocaleDateString('ar-TN')}
-                          {a.accidentTime && <span style={{ fontWeight: 400, color: 'var(--text-secondary)', marginRight: 4 }}>{a.accidentTime}</span>}
-                        </span>
                       </div>
                       <div style={{ display: 'flex', gap: 5 }}>
                         <Link to={`/accidents/${a.id}`} className="btn btn-outline btn-icon btn-sm" title="عرض"><Eye size={14} /></Link>
@@ -228,6 +224,19 @@ export default function AccidentsListPage() {
                           </button>
                         )}
                       </div>
+                    </div>
+                    {/* Date & Time */}
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 8, fontSize: 13 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>📅</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{new Date(a.accidentDate).toLocaleDateString('ar-TN')}</span>
+                      </div>
+                      {a.accidentTime && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>🕐</span>
+                          <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{a.accidentTime}</span>
+                        </div>
+                      )}
                     </div>
                     {/* Details */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', fontSize: 12 }}>
