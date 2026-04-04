@@ -4,7 +4,7 @@ import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle, Shield, Clock,
   Calendar, MapPin, Target, Zap, ChevronLeft, RotateCcw, Car, Route,
-  Gauge, Download, FileText, BarChart3, Activity,
+  Download, BarChart3, Activity,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -554,7 +554,6 @@ export default function InsightsPage() {
                 {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
                   const dayName = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'][dayIdx];
                   const dayData = heatmapData.filter((h: any) => h.dayIndex === dayIdx);
-                  const maxInDay = Math.max(...dayData.map((h: any) => h.count), 1);
                   return (
                     <tr key={dayIdx}>
                       <td style={{ padding: '6px 12px', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>{dayName}</td>
