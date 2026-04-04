@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, createCause, createBrand } from '../api/services';
 import { Save, ArrowRight } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
+import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 
 export default function AccidentFormPage() {
   const { id } = useParams();
@@ -18,10 +19,13 @@ export default function AccidentFormPage() {
 
   const [form, setForm] = useState({
     accidentDate: '', accidentTime: '', governorateId: '',
-    route: '', kilometrePoint: '', causeId: '',
+    cityId: '', route: '', kilometrePoint: '', causeId: '',
     vehicleBrand1Id: '', vehicleBrand2Id: '',
     deathsCount: '0', injuriesCount: '0', description: '',
-  });
+  } as Record<string, string>);
+
+  const sidiBouzidId = '18';
+  const showMunicipality = form.governorateId === sidiBouzidId;
 
   useEffect(() => {
     Promise.all([getGovernorates(), getCauses(), getBrands()])
@@ -33,6 +37,7 @@ export default function AccidentFormPage() {
               accidentDate: a.accidentDate?.split('T')[0] || '',
               accidentTime: a.accidentTime || '',
               governorateId: String(a.governorateId || ''),
+              cityId: a.cityId ? String(a.cityId) : '',
               route: a.route || '',
               kilometrePoint: a.kilometrePoint != null ? String(a.kilometrePoint) : '',
               causeId: String(a.causeId || ''),
@@ -49,7 +54,13 @@ export default function AccidentFormPage() {
   }, [id, isEdit]);
 
   const handleChange = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'governorateId') {
+        updated.cityId = '';
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -61,6 +72,7 @@ export default function AccidentFormPage() {
       accidentDate: form.accidentDate,
       accidentTime: form.accidentTime || undefined,
       governorateId: parseInt(form.governorateId),
+      cityId: form.cityId ? parseInt(form.cityId) : undefined,
       route: form.route || undefined,
       kilometrePoint: form.kilometrePoint ? parseFloat(form.kilometrePoint) : undefined,
       causeId: parseInt(form.causeId),
@@ -127,6 +139,19 @@ export default function AccidentFormPage() {
               />
             </div>
           </div>
+
+          {showMunicipality && (
+            <div className="form-group">
+              <label className="form-label">المعتمدية</label>
+              <SearchableSelect
+                options={SIDI_BOUZID_MUNICIPALITIES.map((m) => ({ value: String(m.id), label: m.nameAr }))}
+                value={form.cityId}
+                onChange={(v) => handleChange('cityId', v)}
+                placeholder="اختر المعتمدية"
+                emptyLabel="— اختر المعتمدية —"
+              />
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">
@@ -199,7 +224,7 @@ export default function AccidentFormPage() {
               <input type="number" min="0" className="form-input" value={form.deathsCount} onChange={(e) => handleChange('deathsCount', e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">عدد الإصابات</label>
+              <label className="form-label">عدد الجرحى</label>
               <input type="number" min="0" className="form-input" value={form.injuriesCount} onChange={(e) => handleChange('injuriesCount', e.target.value)} />
             </div>
           </div>

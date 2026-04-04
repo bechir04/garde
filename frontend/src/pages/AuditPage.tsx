@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getAuditLogs } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 
 const actionLabels: Record<string, { label: string; badge: string }> = {
   CREATE: { label: 'إنشاء', badge: 'badge-success' },
@@ -18,6 +18,38 @@ const entityLabels: Record<string, string> = {
   IMPORT_JOB: 'ملف استيراد',
   AUTH: 'المصادقة',
 };
+
+const detailLabels: Record<string, string> = {
+  softDeleted: 'تم الحذف',
+  route: 'الطريق',
+  accidentDate: 'تاريخ الحادث',
+  deathsCount: 'وفيات',
+  injuriesCount: 'جرحى',
+  changedFields: 'الحقول المعدّلة',
+  action: 'العملية',
+  entity: 'الكيان',
+  entityId: 'المعرف',
+  userId: 'المستخدم',
+  details: 'التفاصيل',
+};
+
+function formatDetails(details: any): string {
+  if (!details || typeof details !== 'object') return String(details);
+  const parts: string[] = [];
+  for (const [key, value] of Object.entries(details)) {
+    const label = detailLabels[key] || key;
+    if (key === 'softDeleted' && value === true) {
+      parts.push('تم حذف السجل');
+    } else if (key === 'changedFields' && Array.isArray(value)) {
+      parts.push(`الحقول المعدّلة: ${value.join('، ')}`);
+    } else if (typeof value === 'object') {
+      parts.push(`${label}: ${JSON.stringify(value, null, 2)}`);
+    } else {
+      parts.push(`${label}: ${value}`);
+    }
+  }
+  return parts.join('\n');
+}
 
 export default function AuditPage() {
   const { user: me } = useAuth();
@@ -157,9 +189,23 @@ export default function AuditPage() {
                           <span className={`badge ${action.badge}`}>{action.label}</span>
                         </td>
                         <td style={{ color: 'var(--text-secondary)' }}>{entityLabel}</td>
-                        <td style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)' }}>
+                        <td style={{ fontSize: 12 }}>
                           {log.entityId && log.entityId !== 'system' ? (
-                            <span title={log.entityId}>{log.entityId.slice(0, 8)}…</span>
+                            log.entityType === 'ACCIDENT' && log.details?.route ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span title={log.details.route} style={{
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                  maxWidth: 180, display: 'inline-block',
+                                }}>
+                                  {log.details.route}
+                                </span>
+                                <ExternalLink size={12} style={{ opacity: 0.4, flexShrink: 0 }} />
+                              </div>
+                            ) : (
+                              <span title={log.entityId} style={{ fontFamily: 'monospace', fontSize: 10, opacity: 0.6 }}>
+                                {log.entityId.slice(0, 8)}…
+                              </span>
+                            )
                           ) : (
                             <span style={{ opacity: 0.4 }}>—</span>
                           )}
@@ -171,9 +217,10 @@ export default function AuditPage() {
                               <pre style={{
                                 background: '#f8f9fb', borderRadius: 6, padding: '6px 10px',
                                 marginTop: 4, fontSize: 11, overflow: 'auto', maxHeight: 120,
-                                direction: 'ltr', textAlign: 'left',
+                                direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap',
+                                fontFamily: 'inherit', lineHeight: 1.6,
                               }}>
-                                {JSON.stringify(log.details, null, 2)}
+                                {formatDetails(log.details)}
                               </pre>
                             </details>
                           ) : (

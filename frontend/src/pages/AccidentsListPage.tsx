@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getAccidents, getGovernorates, getCauses, deleteAccident } from '../api/services';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 
 export default function AccidentsListPage() {
   const { user } = useAuth();
@@ -19,9 +20,12 @@ export default function AccidentsListPage() {
   const limit = 15;
   const search = searchParams.get('search') || '';
   const governorateId = searchParams.get('governorateId') || '';
+  const cityId = searchParams.get('cityId') || '';
   const causeId = searchParams.get('causeId') || '';
   const dateFrom = searchParams.get('dateFrom') || '';
   const dateTo = searchParams.get('dateTo') || '';
+
+  const showMunicipalityDropdown = governorateId === '18';
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -30,6 +34,7 @@ export default function AccidentsListPage() {
       const params: Record<string, unknown> = { page, limit, sortBy: 'accidentDate', sortOrder: 'desc' };
       if (search) params.search = search;
       if (governorateId) params.governorateId = parseInt(governorateId);
+      if (cityId) params.cityId = parseInt(cityId);
       if (causeId) params.causeId = parseInt(causeId);
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
@@ -37,7 +42,7 @@ export default function AccidentsListPage() {
       setData(res);
     } catch { /* ignore */ }
     setLoading(false);
-  }, [page, search, governorateId, causeId, dateFrom, dateTo]);
+  }, [page, search, governorateId, cityId, causeId, dateFrom, dateTo]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -103,6 +108,12 @@ export default function AccidentsListPage() {
   const totalPages = Math.ceil((data.total || 0) / limit);
   const canEdit = user?.role === 'ADMIN' || user?.role === 'OFFICER';
   const canDelete = user?.role === 'ADMIN';
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   return (
     <div>
@@ -111,13 +122,12 @@ export default function AccidentsListPage() {
           <h1 className="page-title">سجل الحوادث</h1>
           <p className="page-subtitle">إجمالي {data.total || 0} حادث مسجل</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           {canDelete && selected.size > 0 && (
             <button
               className="btn btn-danger"
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
             >
               <Trash2 size={16} />
               {bulkDeleting ? 'جاري الحذف...' : `حذف المحدد (${selected.size})`}
@@ -151,6 +161,14 @@ export default function AccidentsListPage() {
               {governorates.map((g: any) => <option key={g.id} value={g.id}>{g.nameAr}</option>)}
             </select>
           </div>
+          {showMunicipalityDropdown && (
+            <div className="form-group" style={{ flex: '1 1 180px' }}>
+              <select className="form-select" value={cityId} onChange={(e) => updateFilter('cityId', e.target.value)}>
+                <option value="">كل البلديات</option>
+                {SIDI_BOUZID_MUNICIPALITIES.map((m) => <option key={m.id} value={m.id}>{m.nameAr}</option>)}
+              </select>
+            </div>
+          )}
           <div className="form-group" style={{ flex: '1 1 180px' }}>
             <select className="form-select" value={causeId} onChange={(e) => updateFilter('causeId', e.target.value)}>
               <option value="">كل الأسباب</option>
@@ -169,73 +187,132 @@ export default function AccidentsListPage() {
       <div className="card">
         {loading ? <div className="spinner" /> : (
           <>
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    {canDelete && (
-                      <th style={{ width: 40, textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          checked={allSelected}
-                          ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
-                          onChange={toggleAll}
-                          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
-                          title="تحديد الكل"
-                        />
-                      </th>
-                    )}
-                    <th>#</th>
-                    <th>التاريخ</th>
-                    <th>الوقت</th>
-                    <th>الولاية</th>
-                    <th>الطريق</th>
-                    <th>السبب</th>
-                    <th>وفيات</th>
-                    <th>إصابات</th>
-                    <th>إجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((a: any, idx: number) => (
-                    <tr key={a.id} style={{ background: selected.has(a.id) ? 'rgba(var(--primary-rgb, 27,67,50), 0.06)' : undefined }}>
-                      {canDelete && (
-                        <td style={{ textAlign: 'center' }}>
+            {isMobile ? (
+              /* Mobile card view */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {rows.length === 0 && (
+                  <div className="empty-state">لا توجد حوادث مطابقة للبحث</div>
+                )}
+                {rows.map((a: any, idx: number) => (
+                  <div key={a.id} style={{
+                    background: selected.has(a.id) ? 'rgba(26,82,118,0.05)' : '#fff',
+                    border: `1px solid ${selected.has(a.id) ? 'rgba(26,82,118,0.2)' : 'var(--border)'}`,
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '12px 14px',
+                  }}>
+                    {/* Header row */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {canDelete && (
                           <input
                             type="checkbox"
                             checked={selected.has(a.id)}
                             onChange={() => toggleOne(a.id)}
                             style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
                           />
-                        </td>
+                        )}
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>#{(page - 1) * limit + idx + 1}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {new Date(a.accidentDate).toLocaleDateString('ar-TN')}
+                          {a.accidentTime && <span style={{ fontWeight: 400, color: 'var(--text-secondary)', marginRight: 4 }}>{a.accidentTime}</span>}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 5 }}>
+                        <Link to={`/accidents/${a.id}`} className="btn btn-outline btn-icon btn-sm" title="عرض"><Eye size={14} /></Link>
+                        {canEdit && <Link to={`/accidents/${a.id}/edit`} className="btn btn-outline btn-icon btn-sm" title="تعديل"><Pencil size={14} /></Link>}
+                        {canDelete && (
+                          <button className="btn btn-danger btn-icon btn-sm" title="حذف" onClick={() => handleDelete(a.id)} disabled={deleting === a.id}>
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {/* Details */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', fontSize: 12 }}>
+                      <div style={{ color: 'var(--text-secondary)' }}>الولاية: <strong style={{ color: 'var(--text-primary)' }}>{a.governorate?.nameAr || '—'}</strong></div>
+                      <div style={{ color: 'var(--text-secondary)' }}>السبب: <span className="tag" style={{ fontSize: 11 }}>{a.cause?.nameAr || '—'}</span></div>
+                      {a.route && <div style={{ color: 'var(--text-secondary)', gridColumn: '1/-1' }}>الطريق: <strong style={{ color: 'var(--text-primary)' }}>{a.route}</strong></div>}
+                    </div>
+                    {/* Badges */}
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>وفيات: {a.deathsCount}</span>
+                      <span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>جرحى: {a.injuriesCount}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Desktop table view */
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      {canDelete && (
+                        <th style={{ width: 40, textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={allSelected}
+                            ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                            onChange={toggleAll}
+                            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
+                            title="تحديد الكل"
+                          />
+                        </th>
                       )}
-                      <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{(page - 1) * limit + idx + 1}</td>
-                      <td>{new Date(a.accidentDate).toLocaleDateString('ar-TN')}</td>
-                      <td>{a.accidentTime || '—'}</td>
-                      <td>{a.governorate?.nameAr || '—'}</td>
-                      <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.route || '—'}</td>
-                      <td><span className="tag">{a.cause?.nameAr || '—'}</span></td>
-                      <td><span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>{a.deathsCount}</span></td>
-                      <td><span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>{a.injuriesCount}</span></td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <Link to={`/accidents/${a.id}`} className="btn btn-outline btn-icon btn-sm" title="عرض"><Eye size={14} /></Link>
-                          {canEdit && <Link to={`/accidents/${a.id}/edit`} className="btn btn-outline btn-icon btn-sm" title="تعديل"><Pencil size={14} /></Link>}
-                          {canDelete && (
-                            <button className="btn btn-danger btn-icon btn-sm" title="حذف" onClick={() => handleDelete(a.id)} disabled={deleting === a.id}>
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                      <th>#</th>
+                      <th>التاريخ</th>
+                      <th>الوقت</th>
+                      <th>الولاية</th>
+                      <th>المعتمدية</th>
+                      <th>الطريق</th>
+                      <th>السبب</th>
+                      <th>وفيات</th>
+                      <th>جرحى</th>
+                      <th>إجراءات</th>
                     </tr>
-                  ))}
-                  {rows.length === 0 && (
-                    <tr><td colSpan={canDelete ? 10 : 9} className="empty-state">لا توجد حوادث مطابقة للبحث</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {rows.map((a: any, idx: number) => (
+                      <tr key={a.id} style={{ background: selected.has(a.id) ? 'rgba(26,82,118,0.05)' : undefined }}>
+                        {canDelete && (
+                          <td style={{ textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={selected.has(a.id)}
+                              onChange={() => toggleOne(a.id)}
+                              style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
+                            />
+                          </td>
+                        )}
+                        <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{(page - 1) * limit + idx + 1}</td>
+                        <td>{new Date(a.accidentDate).toLocaleDateString('ar-TN')}</td>
+                        <td>{a.accidentTime || '—'}</td>
+                        <td>{a.governorate?.nameAr || '—'}</td>
+                        <td>{a.city?.nameAr || '—'}</td>
+                        <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.route || '—'}</td>
+                        <td><span className="tag">{a.cause?.nameAr || '—'}</span></td>
+                        <td><span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>{a.deathsCount}</span></td>
+                        <td><span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>{a.injuriesCount}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <Link to={`/accidents/${a.id}`} className="btn btn-outline btn-icon btn-sm" title="عرض"><Eye size={14} /></Link>
+                            {canEdit && <Link to={`/accidents/${a.id}/edit`} className="btn btn-outline btn-icon btn-sm" title="تعديل"><Pencil size={14} /></Link>}
+                            {canDelete && (
+                              <button className="btn btn-danger btn-icon btn-sm" title="حذف" onClick={() => handleDelete(a.id)} disabled={deleting === a.id}>
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {rows.length === 0 && (
+                      <tr><td colSpan={canDelete ? 11 : 10} className="empty-state">لا توجد حوادث مطابقة للبحث</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <div className="pagination" style={{ marginTop: 16 }}>
               <span className="pagination-info" style={{ marginLeft: 'auto', marginRight: 0 }}>

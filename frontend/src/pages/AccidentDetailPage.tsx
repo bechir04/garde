@@ -30,7 +30,7 @@ export default function AccidentDetailPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div className="detail-grid">
         <div className="card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
             <Calendar size={18} /> المعلومات الأساسية
@@ -60,7 +60,7 @@ export default function AccidentDetailPage() {
           <div style={{ display: 'grid', gap: 12 }}>
             <InfoRow label="السبب" value={<span className="tag">{a.cause?.nameAr || '—'}</span>} />
             <InfoRow label="الوفيات" value={<span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>{a.deathsCount}</span>} />
-            <InfoRow label="الإصابات" value={<span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>{a.injuriesCount}</span>} />
+            <InfoRow label="الجرحى" value={<span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>{a.injuriesCount}</span>} />
           </div>
         </div>
 

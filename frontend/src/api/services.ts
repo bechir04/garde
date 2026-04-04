@@ -8,6 +8,7 @@ export const getMe = () => client.get('/auth/me').then((r) => r.data);
 
 // Lookups
 export const getGovernorates = () => client.get('/locations/governorates').then((r) => r.data);
+export const getCities = (governorateId: number) => client.get(`/locations/cities?governorateId=${governorateId}`).then((r) => r.data);
 export const getCauses = () => client.get('/causes').then((r) => r.data);
 export const createCause = (nameAr: string) => client.post('/causes', { nameAr }).then((r) => r.data);
 
@@ -35,11 +36,28 @@ export const deleteAccident = (id: string) =>
   client.delete(`/accidents/${id}`).then((r) => r.data);
 
 // Analytics — shapes transformed to match chart expectations: { name, count, deaths, injuries }
-export const getAnalyticsSummary = () =>
-  client.get('/analytics/summary').then((r) => r.data);
+export type AnalyticsFilters = {
+  dateFrom?: string;
+  dateTo?: string;
+  governorateId?: string;
+  cityId?: string;
+};
 
-export const getAnalyticsByGovernorate = () =>
-  client.get('/analytics/by-governorate').then((r) =>
+const buildFilterParams = (filters?: AnalyticsFilters) => {
+  if (!filters) return {};
+  const params: Record<string, string> = {};
+  if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+  if (filters.dateTo) params.dateTo = filters.dateTo;
+  if (filters.governorateId) params.governorateId = filters.governorateId;
+  if (filters.cityId) params.cityId = filters.cityId;
+  return params;
+};
+
+export const getAnalyticsSummary = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/summary', { params: buildFilterParams(filters) }).then((r) => r.data);
+
+export const getAnalyticsByGovernorate = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-governorate', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       name: d.governorateName,
       count: d.accidentCount,
@@ -48,8 +66,8 @@ export const getAnalyticsByGovernorate = () =>
     }))
   );
 
-export const getAnalyticsByCause = () =>
-  client.get('/analytics/by-cause').then((r) =>
+export const getAnalyticsByCause = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-cause', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       name: d.causeName,
       count: d.accidentCount,
@@ -58,8 +76,8 @@ export const getAnalyticsByCause = () =>
     }))
   );
 
-export const getAnalyticsByBrand = () =>
-  client.get('/analytics/by-brand').then((r) =>
+export const getAnalyticsByBrand = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-brand', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       name: d.brandName,
       count: d.accidentCount,
@@ -69,8 +87,8 @@ export const getAnalyticsByBrand = () =>
   );
 
 // Returns [{ period: "HH:00", accidents }] — mapped from /analytics/by-hour
-export const getAnalyticsByHour = () =>
-  client.get('/analytics/by-hour').then((r) =>
+export const getAnalyticsByHour = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-hour', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       period: `${String(d.hour).padStart(2, '0')}:00`,
       accidents: d.count,
@@ -78,8 +96,8 @@ export const getAnalyticsByHour = () =>
   );
 
 // Returns [{ period: "YYYY-MM", accidents, deaths, injuries }] — mapped from /analytics/by-month
-export const getAnalyticsByMonth = () =>
-  client.get('/analytics/by-month').then((r) =>
+export const getAnalyticsByMonth = (filters?: AnalyticsFilters) =>
+  client.get('/analytics/by-month', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       period: d.month,
       accidents: d.accidentCount,
@@ -88,8 +106,8 @@ export const getAnalyticsByMonth = () =>
     }))
   );
 
-export const getTopRoutes = (limit = 10) =>
-  client.get('/analytics/top-routes', { params: { limit } }).then((r) => r.data);
+export const getTopRoutes = (limit = 10, filters?: AnalyticsFilters) =>
+  client.get('/analytics/top-routes', { params: { limit, ...buildFilterParams(filters) } }).then((r) => r.data);
 
 export const getAnalyticsInsights = () =>
   client.get('/analytics/insights').then((r) => r.data);

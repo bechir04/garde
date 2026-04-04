@@ -110,13 +110,6 @@ export default function LoginPage() {
             {loading ? 'جاري الدخول...' : 'تسجيل الدخول'}
           </button>
         </form>
-
-        <div style={{ marginTop: 24, padding: '12px 16px', background: '#f8f9fb', borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
-          <strong>بيانات تجريبية:</strong><br />
-          مدير: admin / admin123<br />
-          ضابط: officer / officer123<br />
-          مطّلع: viewer / viewer123
-        </div>
       </div>
     </div>
   );

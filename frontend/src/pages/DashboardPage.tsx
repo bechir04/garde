@@ -60,7 +60,7 @@ export default function DashboardPage() {
           <div className="kpi-icon warning"><AlertTriangle size={24} /></div>
           <div>
             <div className="kpi-value">{summary?.totalInjuries || 0}</div>
-            <div className="kpi-label">إجمالي الإصابات</div>
+            <div className="kpi-label">إجمالي الجرحى</div>
           </div>
         </div>
         <div className="kpi-card">
@@ -75,15 +75,15 @@ export default function DashboardPage() {
       <div className="charts-grid">
         <div className="chart-card">
           <div className="chart-title">توزيع الحوادث حسب السبب</div>
-          <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 180 : 200}>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
                 data={byCause}
                 dataKey="count"
                 nameKey="name"
                 cx="50%" cy="50%"
-                innerRadius={window.innerWidth < 768 ? 45 : 55}
-                outerRadius={window.innerWidth < 768 ? 75 : 90}
+                innerRadius={52}
+                outerRadius={82}
                 paddingAngle={3}
               >
                 {byCause.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                 <th>الطريق</th>
                 <th>السبب</th>
                 <th>وفيات</th>
-                <th>إصابات</th>
+                <th>جرحى</th>
               </tr>
             </thead>
             <tbody>

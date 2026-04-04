@@ -11,6 +11,7 @@ import InsightsPage from './pages/InsightsPage';
 import ImportPage from './pages/ImportPage';
 import UsersPage from './pages/UsersPage';
 import AuditPage from './pages/AuditPage';
+import MapPage from './pages/MapPage';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/import" element={<ImportPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/audit" element={<AuditPage />} />
+            <Route path="/map" element={<MapPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

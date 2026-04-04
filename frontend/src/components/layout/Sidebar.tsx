@@ -1,17 +1,25 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard, Car, BarChart3, Upload, Lightbulb, LogOut,
-  Users, ClipboardList, X,
+  Users, ClipboardList, X, Map, ChevronDown, BarChart2,
 } from 'lucide-react';
 import logo from '../../assets/garde national.png';
 
 const mainNav = [
   { to: '/', label: 'لوحة القيادة', icon: LayoutDashboard, exact: true },
   { to: '/accidents', label: 'سجل الحوادث', icon: Car, exact: false },
-  { to: '/statistics', label: 'الإحصائيات', icon: BarChart3, exact: false },
+];
+
+const analyticsNav = [
+  { to: '/statistics', label: 'الإحصائيات', icon: BarChart3 },
+  { to: '/map', label: 'الخريطة التفاعلية', icon: Map },
+  { to: '/insights', label: 'الاستنتاجات', icon: Lightbulb },
+];
+
+const otherNav = [
   { to: '/import', label: 'استيراد البيانات', icon: Upload, exact: false },
-  { to: '/insights', label: 'الاستنتاجات', icon: Lightbulb, exact: false },
 ];
 
 const adminNav = [
@@ -32,14 +40,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const isActive = (to: string, exact: boolean) =>
     exact ? location.pathname === to : location.pathname.startsWith(to);
 
+  const isAnalyticsActive = analyticsNav.some((item) => isActive(item.to, false));
+  const [analyticsOpen, setAnalyticsOpen] = useState(isAnalyticsActive);
+
+  // Auto-expand analytics dropdown when navigating to an analytics route
+  useEffect(() => {
+    if (isAnalyticsActive) setAnalyticsOpen(true);
+  }, [isAnalyticsActive]);
+
+  const handleNavClick = () => {
+    if (window.innerWidth <= 768) onClose?.();
+  };
+
   return (
     <>
-      {/* Sidebar */}
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          {/* Close button for mobile */}
-          <button 
-            className="mobile-nav-toggle" 
+          <button
+            className="mobile-nav-toggle"
             onClick={onClose}
             style={{ position: 'absolute', left: 10, top: 10, color: 'rgba(255,255,255,0.5)', display: 'none' }}
             id="sidebar-close-btn"
@@ -69,7 +87,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <NavLink
               key={item.to}
               to={item.to}
-              onClick={() => window.innerWidth <= 768 && onClose?.()}
+              onClick={handleNavClick}
+              className={`nav-link ${isActive(item.to, item.exact) ? 'active' : ''}`}
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+
+          {/* Analytics dropdown */}
+          <div>
+            <button
+              onClick={() => setAnalyticsOpen(!analyticsOpen)}
+              className={`nav-link nav-dropdown ${isAnalyticsActive ? 'active' : ''}`}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <BarChart2 size={20} />
+                <span>التحليلات</span>
+              </div>
+              <ChevronDown
+                size={16}
+                style={{ transition: 'transform 0.2s', transform: analyticsOpen ? 'rotate(180deg)' : undefined }}
+              />
+            </button>
+            {analyticsOpen && (
+              <div style={{ padding: '4px 0 4px 16px' }}>
+                {analyticsNav.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={`nav-link ${isActive(item.to, false) ? 'active' : ''}`}
+                    style={{ fontSize: 13, padding: '8px 16px', paddingLeft: 32 }}
+                  >
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {otherNav.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={handleNavClick}
               className={`nav-link ${isActive(item.to, item.exact) ? 'active' : ''}`}
             >
               <item.icon size={20} />
@@ -84,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  onClick={() => window.innerWidth <= 768 && onClose?.()}
+                  onClick={handleNavClick}
                   className={`nav-link ${isActive(item.to, item.exact) ? 'active' : ''}`}
                 >
                   <item.icon size={20} />
