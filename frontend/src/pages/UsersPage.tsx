@@ -3,6 +3,7 @@ import { getUsers, createUser, updateUser } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Check } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 interface User {
   id: string;
@@ -30,6 +31,7 @@ const emptyForm = { username: '', password: '', fullName: '', role: 'OFFICER' };
 export default function UsersPage() {
   const { user: me } = useAuth();
   const navigate = useNavigate();
+  const { success, error: toastError, info } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -37,7 +39,6 @@ export default function UsersPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [toast, setToast] = useState('');
 
   // Redirect non-admins
   useEffect(() => {
@@ -50,11 +51,6 @@ export default function UsersPage() {
   };
 
   useEffect(() => { load(); }, []);
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
-  };
 
   const openCreate = () => {
     setEditTarget(null);
@@ -79,16 +75,16 @@ export default function UsersPage() {
         const payload: any = { fullName: form.fullName, role: form.role };
         if (form.password) payload.password = form.password;
         await updateUser(editTarget.id, payload);
-        showToast('تم تحديث المستخدم بنجاح');
+        success('تم التحديث', 'تم تحديث بيانات المستخدم بنجاح');
       } else {
         if (!form.password) { setError('كلمة المرور مطلوبة'); setSaving(false); return; }
         await createUser({ username: form.username, password: form.password, fullName: form.fullName, role: form.role });
-        showToast('تم إنشاء المستخدم بنجاح');
+        success('تم الإنشاء', 'تم إنشاء الحساب بنجاح');
       }
       setShowModal(false);
       load();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+      toastError('خطأ', err?.response?.data?.message || 'حدث خطأ أثناء الحفظ');
     } finally {
       setSaving(false);
     }
@@ -97,27 +93,19 @@ export default function UsersPage() {
   const toggleActive = async (u: User) => {
     try {
       await updateUser(u.id, { isActive: !u.isActive });
-      showToast(u.isActive ? 'تم تعطيل الحساب' : 'تم تفعيل الحساب');
+      if (u.isActive) {
+        info('تم التعطيل', 'تم تعطيل حساب المستخدم');
+      } else {
+        success('تم التفعيل', 'تم تفعيل حساب المستخدم');
+      }
       load();
     } catch {
-      showToast('فشل تحديث الحالة');
+      toastError('خطأ', 'فشل تحديث الحالة');
     }
   };
 
   return (
     <div>
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--primary)', color: '#fff', padding: '10px 24px',
-          borderRadius: 10, zIndex: 999, fontSize: 14, boxShadow: 'var(--shadow-lg)',
-          display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          <Check size={16} /> {toast}
-        </div>
-      )}
-
       <div className="page-header">
         <div>
           <h1 className="page-title">إدارة المستخدمين</h1>

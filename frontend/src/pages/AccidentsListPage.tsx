@@ -3,10 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getAccidents, getGovernorates, getCauses, deleteAccident } from '../api/services';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 
 export default function AccidentsListPage() {
   const { user } = useAuth();
+  const { success, error: toastError } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<any>({ data: [], total: 0 });
   const [governorates, setGovernorates] = useState<any[]>([]);
@@ -65,8 +67,11 @@ export default function AccidentsListPage() {
     setDeleting(id);
     try {
       await deleteAccident(id);
+      success('تم الحذف', 'تم حذف الحادث بنجاح');
       fetchData();
-    } catch { /* ignore */ }
+    } catch {
+      toastError('خطأ', 'فشل في حذف الحادث');
+    }
     setDeleting(null);
   };
 
@@ -99,9 +104,12 @@ export default function AccidentsListPage() {
     setBulkDeleting(true);
     try {
       await Promise.all([...selected].map((id) => deleteAccident(id)));
+      success('تم الحذف', `تم حذف ${selected.size} حادث بنجاح`);
       setSelected(new Set());
       fetchData();
-    } catch { /* ignore */ }
+    } catch {
+      toastError('خطأ', 'فشل في حذف بعض الحوادث');
+    }
     setBulkDeleting(false);
   };
 

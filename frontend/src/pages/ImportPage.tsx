@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, type DragEvent, type ChangeEvent } from 'react';
 import { uploadExcel, commitImport, getImportTemplate, getGovernorates } from '../api/services';
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Download, Info } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 export default function ImportPage() {
   const fileRef = useRef<HTMLInputElement>(null);
+  const { success, error: toastError, info } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -48,8 +50,9 @@ export default function ImportPage() {
       const res = await uploadExcel(file, defaultGovId ? Number(defaultGovId) : undefined);
       setPreviewData(res);
       setResult(null);
+      info('تم الرفع', `تم رفع ${res.totalRows} سطر — ${res.validRows} صالح للاستيراد`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'حدث خطأ أثناء رفع الملف');
+      toastError('خطأ في الرفع', err.response?.data?.message || 'حدث خطأ أثناء رفع الملف');
     }
     setUploading(false);
   };
@@ -63,8 +66,9 @@ export default function ImportPage() {
       setResult(res);
       setPreviewData(null);
       setFile(null);
+      success('تم الاستيراد', `تم إضافة ${res.committed} سجل إلى قاعدة البيانات`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'حدث خطأ أثناء تأكيد الاستيراد');
+      toastError('خطأ في الاستيراد', err.response?.data?.message || 'حدث خطأ أثناء تأكيد الاستيراد');
     }
     setCommitting(false);
   };

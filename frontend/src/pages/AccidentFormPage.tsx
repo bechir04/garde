@@ -4,11 +4,13 @@ import { getAccident, createAccident, updateAccident, getGovernorates, getCauses
 import { Save, ArrowRight } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
+import { useToast } from '../contexts/ToastContext';
 
 export default function AccidentFormPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { success, error: toastError } = useToast();
 
   const [governorates, setGovernorates] = useState<any[]>([]);
   const [causes, setCauses] = useState<any[]>([]);
@@ -86,12 +88,14 @@ export default function AccidentFormPage() {
     try {
       if (isEdit && id) {
         await updateAccident(id, payload);
+        success('تم التحديث', 'تم تحديث بيانات الحادث بنجاح');
       } else {
         await createAccident(payload);
+        success('تم التسجيل', 'تم تسجيل الحادث بنجاح');
       }
       navigate('/accidents');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+      toastError('خطأ في الحفظ', err.response?.data?.message || 'حدث خطأ أثناء الحفظ');
     }
     setSaving(false);
   };
