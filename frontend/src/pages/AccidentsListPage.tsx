@@ -172,7 +172,7 @@ export default function AccidentsListPage() {
           {showMunicipalityDropdown && (
             <div className="form-group" style={{ flex: '1 1 180px' }}>
               <select className="form-select" value={cityId} onChange={(e) => updateFilter('cityId', e.target.value)}>
-                <option value="">كل البلديات</option>
+                <option value="">كل المعتمديات</option>
                 {SIDI_BOUZID_MUNICIPALITIES.map((m) => <option key={m.id} value={m.id}>{m.nameAr}</option>)}
               </select>
             </div>

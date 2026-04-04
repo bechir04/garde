@@ -106,7 +106,7 @@ export default function InsightsPage() {
 
     if (d.comparison) {
       const compData = [['المؤشر', 'الحالي', 'السابق', 'التغير (%)']];
-      const labels: Record<string, string> = { accidents: 'الحوادث', deaths: 'الوفيات', injuries: 'الجرحى', lethalityRate: 'معدل الفتك' };
+      const labels: Record<string, string> = { accidents: 'الحوادث', deaths: 'الوفيات', injuries: 'الجرحى', lethalityRate: 'معدل القتلى' };
       Object.entries(d.comparison).forEach(([key, val]: [string, any]) => {
         compData.push([labels[key] || key, val.current, val.previous, val.change !== null ? val.change : '—']);
       });
@@ -136,7 +136,7 @@ export default function InsightsPage() {
     }
 
     if (d.causeLethality?.length > 0) {
-      const causeData = [['السبب', 'عدد الحوادث', 'الوفيات', 'الجرحى', 'معدل الفتك']];
+      const causeData = [['السبب', 'عدد الحوادث', 'الوفيات', 'الجرحى', 'معدل القتلى']];
       d.causeLethality.forEach((c: any) => {
         causeData.push([c.causeName, c.count, c.deaths, c.injuries, c.deathRate]);
       });
@@ -323,7 +323,7 @@ export default function InsightsPage() {
             {[
               { label: 'الحوادث', key: 'accidents', icon: <AlertTriangle size={20} />, cls: 'danger' },
               { label: 'الوفيات', key: 'deaths', icon: <Shield size={20} />, cls: 'danger' },
-              { label: 'معدل الفتك', key: 'lethalityRate', icon: <Target size={20} />, cls: 'primary' },
+              { label: 'معدل القتلى', key: 'lethalityRate', icon: <Target size={20} />, cls: 'primary' },
             ].map(({ label, key, icon, cls }) => {
               const m = d.comparison[key];
               return (
@@ -381,7 +381,7 @@ export default function InsightsPage() {
             {settings.insights.anomalies && (
             <div className="card">
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <MapPin size={17} color="var(--danger)" /> بؤر التوتر المروري
+                <MapPin size={17} color="var(--danger)" /> نقاط السوداء
               </h3>
               {(!d?.anomalies || d.anomalies.length === 0) ? (
                 <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)', fontSize: 13 }}>
@@ -448,7 +448,7 @@ export default function InsightsPage() {
              {settings.insights.causeLethality && (
              <div className="card">
                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                 <AlertTriangle size={17} color="#e67e22" /> الأسباب حسب معدل الفتك
+                 <AlertTriangle size={17} color="#e67e22" /> الأسباب حسب معدل القتلى
                </h3>
                {(!d?.causeLethality || d.causeLethality.length === 0) ? (
                  <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)', fontSize: 13 }}>لا توجد بيانات كافية</div>

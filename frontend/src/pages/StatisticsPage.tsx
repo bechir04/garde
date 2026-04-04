@@ -7,6 +7,7 @@ import {
 import {
   getAnalyticsSummary, getAnalyticsByGovernorate, getAnalyticsByCause,
   getAnalyticsByBrand, getAnalyticsByHour, getAnalyticsByMonth,
+  getAnalyticsByCity,
   getGovernorates,
 } from '../api/services';
 import type { AnalyticsFilters } from '../api/services';
@@ -26,6 +27,7 @@ export default function StatisticsPage() {
   const [byBrand, setByBrand] = useState<any[]>([]);
   const [byTime, setByTime] = useState<any[]>([]);
   const [trends, setTrends] = useState<any[]>([]);
+  const [byCity, setByCity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState<AnalyticsFilters>({});
@@ -51,6 +53,13 @@ export default function StatisticsPage() {
       setByBrand(b.slice(0, 8));
       setByTime(t);
       setTrends(tr);
+
+      if (filters.governorateId === '18') {
+        const cityData = await getAnalyticsByCity({ ...filters, governorateId: '18' });
+        setByCity(cityData);
+      } else {
+        setByCity([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -316,6 +325,24 @@ export default function StatisticsPage() {
           </div>
         )}
       </div>
+
+      {showMunicipalityDropdown && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <div className="chart-title">🏘️ الحوادث حسب المعتمدية</div>
+          {byCity.length === 0 ? <EmptyChart /> : (
+            <ResponsiveContainer width="100%" height={380}>
+              <BarChart data={byCity} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
+                <YAxis dataKey="name" type="category" width={160} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: 'var(--shadow-lg)', direction: 'rtl', fontFamily: 'inherit' }} />
+                <Bar dataKey="count" fill="#27ae60" radius={[4, 0, 0, 4]} name="عدد الحوادث" barSize={22} />
+                <Bar dataKey="deaths" fill="#e74c3c" radius={[4, 0, 0, 4]} name="الوفيات" barSize={22} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      )}
 
       {settings.stats.trendLine && (
         <div className="chart-card" style={{ marginBottom: 24 }}>

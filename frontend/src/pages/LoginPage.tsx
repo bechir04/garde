@@ -45,7 +45,7 @@ export default function LoginPage() {
             style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))' }}
           />
         </div>
-        <h1>نظام إدارة حوادث المرور - سيدي بوزيد</h1>
+        <h1>نضام ادارة حوادث المرور - محمد المولهي</h1>
         <p className="subtitle">الحرس الوطني</p>
 
         {error && <div className="login-error">{error}</div>}

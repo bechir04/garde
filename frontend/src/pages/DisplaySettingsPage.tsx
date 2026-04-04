@@ -15,9 +15,9 @@ const statsLabels: Record<string, string> = {
 const insightsLabels: Record<string, string> = {
   gauge: 'مؤشر الخطورة',
   kpi: 'بطاقات المؤشرات',
-  anomalies: 'بؤر التوتر المروري',
+  anomalies: 'نقاط السوداء',
   timeSlots: 'توزيع الحوادث حسب الفترة',
-  causeLethality: 'الأسباب حسب معدل الفتك',
+  causeLethality: 'الأسباب حسب معدل القتلى',
   weekday: 'الحوادث حسب اليوم',
   monthlyTrend: 'اتجاه الحوادث — 6 أشهر',
   topRoutes: 'أخطر الطرق',
