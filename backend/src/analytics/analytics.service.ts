@@ -71,7 +71,7 @@ export class AnalyticsService {
       by: ['governorateId'],
       where,
       _count: { id: true },
-      _sum: { deathsCount: true },
+      _sum: { deathsCount: true, injuriesCount: true },
       orderBy: { _count: { id: 'desc' } },
     });
 
@@ -83,6 +83,7 @@ export class AnalyticsService {
       governorateName: govMap.get(r.governorateId) || '',
       accidentCount: r._count.id,
       deathsCount: r._sum.deathsCount || 0,
+      injuriesCount: r._sum.injuriesCount || 0,
     }));
   }
 
@@ -126,7 +127,7 @@ export class AnalyticsService {
       by: ['causeId'],
       where,
       _count: { id: true },
-      _sum: { deathsCount: true },
+      _sum: { deathsCount: true, injuriesCount: true },
       orderBy: { _count: { id: 'desc' } },
     });
 
@@ -138,6 +139,7 @@ export class AnalyticsService {
       causeName: causeMap.get(r.causeId) || '',
       accidentCount: r._count.id,
       deathsCount: r._sum.deathsCount || 0,
+      injuriesCount: r._sum.injuriesCount || 0,
     }));
   }
 
@@ -177,17 +179,18 @@ export class AnalyticsService {
     const where = buildFilterWhere(filters || {});
     const accidents = await this.prisma.accident.findMany({
       where,
-      select: { accidentDate: true, deathsCount: true },
+      select: { accidentDate: true, deathsCount: true, injuriesCount: true },
       orderBy: { accidentDate: 'asc' },
     });
 
-    const monthly = new Map<string, { count: number; deaths: number }>();
+    const monthly = new Map<string, { count: number; deaths: number; injuries: number }>();
     for (const acc of accidents) {
       const d = new Date(acc.accidentDate);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const existing = monthly.get(key) || { count: 0, deaths: 0 };
+      const existing = monthly.get(key) || { count: 0, deaths: 0, injuries: 0 };
       existing.count++;
       existing.deaths += acc.deathsCount;
+      existing.injuries += acc.injuriesCount;
       monthly.set(key, existing);
     }
 
@@ -195,6 +198,7 @@ export class AnalyticsService {
       month,
       accidentCount: s.count,
       deathsCount: s.deaths,
+      injuriesCount: s.injuries,
     }));
   }
 

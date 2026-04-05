@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -24,5 +24,10 @@ export class UsersController {
   @Put(':id')
   update(@Param('id') id: string, @Body() body: { fullName?: string; role?: UserRole; isActive?: boolean; password?: string }) {
     return this.usersService.update(id, body);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
   }
 }

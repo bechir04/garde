@@ -40,4 +40,11 @@ export class UsersService {
       select: { id: true, username: true, fullName: true, role: true, isActive: true },
     });
   }
+
+  async remove(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
+      select: { id: true, username: true },
+    });
+  }
 }
