@@ -9,6 +9,7 @@ import AccidentsListPage from './pages/AccidentsListPage';
 import AccidentDetailPage from './pages/AccidentDetailPage';
 import AccidentFormPage from './pages/AccidentFormPage';
 import StatisticsPage from './pages/StatisticsPage';
+import ChartDetailPage from './pages/ChartDetailPage';
 import InsightsPage from './pages/InsightsPage';
 import ImportPage from './pages/ImportPage';
 import UsersPage from './pages/UsersPage';
@@ -31,6 +32,7 @@ export default function App() {
                 <Route path="/accidents/:id" element={<AccidentDetailPage />} />
                 <Route path="/accidents/:id/edit" element={<AccidentFormPage />} />
                 <Route path="/statistics" element={<StatisticsPage />} />
+                <Route path="/statistics/:chartType" element={<ChartDetailPage />} />
                 <Route path="/insights" element={<InsightsPage />} />
                 <Route path="/import" element={<ImportPage />} />
                 <Route path="/users" element={<UsersPage />} />

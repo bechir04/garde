@@ -16,6 +16,7 @@ export default function AccidentsListPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const page = parseInt(searchParams.get('page') || '1');
@@ -31,7 +32,7 @@ export default function AccidentsListPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    setSelected(new Set());
+    if (!selectAll) setSelected(new Set());
     try {
       const params: Record<string, unknown> = { page, limit, sortBy: 'accidentDate', sortOrder: 'desc' };
       if (search) params.search = search;
@@ -77,18 +78,15 @@ export default function AccidentsListPage() {
 
   const rows: any[] = data.data || [];
   const allPageIds = rows.map((a: any) => a.id);
-  const allSelected = allPageIds.length > 0 && allPageIds.every((id: string) => selected.has(id));
-  const someSelected = allPageIds.some((id: string) => selected.has(id));
+  const allSelected = allPageIds.length > 0 && allPageIds.every((id: string) => selected.has(id) || selectAll);
+  const someSelected = allPageIds.some((id: string) => selected.has(id)) || selectAll;
 
   const toggleAll = () => {
     if (allSelected) {
-      const next = new Set(selected);
-      allPageIds.forEach((id: string) => next.delete(id));
-      setSelected(next);
+      setSelectAll(false);
+      setSelected(new Set());
     } else {
-      const next = new Set(selected);
-      allPageIds.forEach((id: string) => next.add(id));
-      setSelected(next);
+      setSelectAll(true);
     }
   };
 
@@ -99,13 +97,29 @@ export default function AccidentsListPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (selected.size === 0) return;
-    if (!confirm(`هل أنت متأكد من حذف ${selected.size} حادث؟ لا يمكن التراجع عن هذه العملية.`)) return;
+    const count = selectAll ? data.total : selected.size;
+    if (count === 0) return;
+    if (!confirm(`هل أنت متأكد من حذف ${count} حادث؟ لا يمكن التراجع عن هذه العملية.`)) return;
     setBulkDeleting(true);
     try {
-      await Promise.all([...selected].map((id) => deleteAccident(id)));
-      success('تم الحذف', `تم حذف ${selected.size} حادث بنجاح`);
+      let idsToDelete: string[];
+      if (selectAll) {
+        const params: Record<string, unknown> = { limit: data.total, sortBy: 'accidentDate', sortOrder: 'desc' };
+        if (search) params.search = search;
+        if (governorateId) params.governorateId = parseInt(governorateId);
+        if (cityId) params.cityId = parseInt(cityId);
+        if (causeId) params.causeId = parseInt(causeId);
+        if (dateFrom) params.dateFrom = dateFrom;
+        if (dateTo) params.dateTo = dateTo;
+        const allData = await getAccidents(params);
+        idsToDelete = allData.data.map((a: any) => a.id);
+      } else {
+        idsToDelete = [...selected];
+      }
+      await Promise.all(idsToDelete.map((id) => deleteAccident(id)));
+      success('تم الحذف', `تم حذف ${idsToDelete.length} حادث بنجاح`);
       setSelected(new Set());
+      setSelectAll(false);
       fetchData();
     } catch {
       toastError('خطأ', 'فشل في حذف بعض الحوادث');
@@ -131,14 +145,14 @@ export default function AccidentsListPage() {
           <p className="page-subtitle">إجمالي {data.total || 0} حادث مسجل</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          {canDelete && selected.size > 0 && (
+          {canDelete && (selectAll || selected.size > 0) && (
             <button
               className="btn btn-danger"
               onClick={handleBulkDelete}
               disabled={bulkDeleting}
             >
               <Trash2 size={16} />
-              {bulkDeleting ? 'جاري الحذف...' : `حذف المحدد (${selected.size})`}
+              {bulkDeleting ? 'جاري الحذف...' : `حذف المحدد (${selectAll ? data.total : selected.size})`}
             </button>
           )}
           {canEdit && (
@@ -292,13 +306,20 @@ export default function AccidentsListPage() {
                   </thead>
                   <tbody>
                     {rows.map((a: any, idx: number) => (
-                      <tr key={a.id} style={{ background: selected.has(a.id) ? 'rgba(26,82,118,0.05)' : undefined }}>
+                      <tr key={a.id} style={{ background: (selectAll || selected.has(a.id)) ? 'rgba(26,82,118,0.05)' : undefined }}>
                         {canDelete && (
                           <td style={{ textAlign: 'center' }}>
                             <input
                               type="checkbox"
-                              checked={selected.has(a.id)}
-                              onChange={() => toggleOne(a.id)}
+                              checked={selectAll || selected.has(a.id)}
+                              onChange={() => {
+                                if (selectAll) {
+                                  setSelectAll(false);
+                                  setSelected(new Set(allPageIds.filter((id: string) => id !== a.id)));
+                                } else {
+                                  toggleOne(a.id);
+                                }
+                              }}
                               style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
                             />
                           </td>

@@ -7,11 +7,11 @@ import {
 import {
   getAnalyticsSummary, getAnalyticsByGovernorate, getAnalyticsByCause,
   getAnalyticsByBrand, getAnalyticsByHour, getAnalyticsByMonth,
-  getAnalyticsByCity,
+  getAnalyticsByCity, getIntelligence,
   getGovernorates,
 } from '../api/services';
 import type { AnalyticsFilters } from '../api/services';
-import { Filter, Calendar, MapPin, Building2, RotateCcw, TrendingDown, Map } from 'lucide-react';
+import { Filter, Calendar, MapPin, Building2, RotateCcw, TrendingDown, Map, BarChart3, Eye } from 'lucide-react';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import { useDisplaySettings } from '../contexts/DisplaySettingsContext';
 
@@ -28,11 +28,14 @@ export default function StatisticsPage() {
   const [byTime, setByTime] = useState<any[]>([]);
   const [trends, setTrends] = useState<any[]>([]);
   const [byCity, setByCity] = useState<any[]>([]);
+  const [comparison, setComparison] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState<AnalyticsFilters>({});
+  const [appliedFilters, setAppliedFilters] = useState<AnalyticsFilters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [selectedMunicipality, setSelectedMunicipality] = useState('');
+  const [dateMode, setDateMode] = useState<'range' | 'comparison'>('range');
 
   const showMunicipalityDropdown = filters.governorateId === '18';
 
@@ -40,12 +43,12 @@ export default function StatisticsPage() {
     setLoading(true);
     try {
       const [s, g, c, b, t, tr] = await Promise.all([
-        getAnalyticsSummary(filters),
-        getAnalyticsByGovernorate(filters),
-        getAnalyticsByCause(filters),
-        getAnalyticsByBrand(filters),
-        getAnalyticsByHour(filters),
-        getAnalyticsByMonth(filters),
+        getAnalyticsSummary(appliedFilters),
+        getAnalyticsByGovernorate(appliedFilters),
+        getAnalyticsByCause(appliedFilters),
+        getAnalyticsByBrand(appliedFilters),
+        getAnalyticsByHour(appliedFilters),
+        getAnalyticsByMonth(appliedFilters),
       ]);
       setSummary(s);
       setByGov(g.slice(0, 10));
@@ -54,16 +57,23 @@ export default function StatisticsPage() {
       setByTime(t);
       setTrends(tr);
 
-      if (filters.governorateId === '18') {
-        const cityData = await getAnalyticsByCity({ ...filters, governorateId: '18' });
+      if (appliedFilters.governorateId === '18') {
+        const cityData = await getAnalyticsByCity({ ...appliedFilters, governorateId: '18' });
         setByCity(cityData);
       } else {
         setByCity([]);
       }
+
+      if (appliedFilters.dateFrom && appliedFilters.dateTo) {
+        const intel = await getIntelligence({ dateFrom: appliedFilters.dateFrom, dateTo: appliedFilters.dateTo, governorateId: appliedFilters.governorateId ? Number(appliedFilters.governorateId) : undefined, cityId: appliedFilters.cityId ? Number(appliedFilters.cityId) : undefined });
+        setComparison(intel);
+      } else {
+        setComparison(null);
+      }
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [appliedFilters]);
 
   useEffect(() => {
     getGovernorates().then(setGovernorates);
@@ -72,6 +82,10 @@ export default function StatisticsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const applyFilters = () => {
+    setAppliedFilters({ ...filters });
+  };
 
   const handleGovernorateChange = (govId: string) => {
     setFilters((prev) => ({ ...prev, governorateId: govId || undefined, cityId: undefined }));
@@ -90,6 +104,9 @@ export default function StatisticsPage() {
   const clearFilters = () => {
     setFilters({});
     setSelectedMunicipality('');
+    setDateMode('range');
+    setComparison(null);
+    setAppliedFilters({});
   };
 
   const hasActiveFilters = !!(filters.dateFrom || filters.dateTo || filters.governorateId || filters.cityId);
@@ -124,18 +141,36 @@ export default function StatisticsPage() {
             <h3 style={{ fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Filter size={16} /> فلترة البيانات
             </h3>
-            {hasActiveFilters && (
-              <button className="btn btn-outline" onClick={clearFilters} style={{ fontSize: 12, padding: '6px 12px' }}>
-                <RotateCcw size={14} /> مسح الكل
-              </button>
-            )}
+            <button className="btn btn-outline" onClick={clearFilters} style={{ fontSize: 12, padding: '6px 12px' }}>
+              <RotateCcw size={14} /> إعادة تعيين
+            </button>
+          </div>
+
+          <div className="form-group" style={{ flex: '1 1 220px', marginBottom: 16 }}>
+            <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>
+              <Calendar size={12} style={{ display: 'inline', marginLeft: 4 }} />
+              وضع التاريخ
+            </label>
+            <select
+              className="form-input"
+              value={dateMode}
+              onChange={(e) => {
+                setDateMode(e.target.value as 'range' | 'comparison');
+                setFilters((prev) => ({ ...prev, dateFrom: undefined, dateTo: undefined }));
+                setComparison(null);
+              }}
+              style={{ fontSize: 13, padding: '8px 12px', background: '#fff', borderColor: 'var(--primary)', borderWidth: 1 }}
+            >
+              <option value="range">من تاريخ ← إلى تاريخ</option>
+              <option value="comparison">مقارنة بين فترتين</option>
+            </select>
           </div>
 
           <div className="form-row" style={{ gap: 12, flexWrap: 'wrap' }}>
             <div className="form-group" style={{ flex: '1 1 180px', marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>
                 <Calendar size={12} style={{ display: 'inline', marginLeft: 4 }} />
-                من تاريخ
+                {dateMode === 'comparison' ? 'بداية الفترة' : 'من تاريخ'}
               </label>
               <input
                 type="date"
@@ -149,7 +184,7 @@ export default function StatisticsPage() {
             <div className="form-group" style={{ flex: '1 1 180px', marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>
                 <Calendar size={12} style={{ display: 'inline', marginLeft: 4 }} />
-                إلى تاريخ
+                {dateMode === 'comparison' ? 'نهاية الفترة' : 'إلى تاريخ'}
               </label>
               <input
                 type="date"
@@ -198,6 +233,13 @@ export default function StatisticsPage() {
               </div>
             )}
           </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+            <button className="btn btn-primary" onClick={applyFilters} disabled={loading} style={{ fontSize: 13, padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BarChart3 size={16} />
+              {loading ? 'جاري التحليل...' : 'تطبيق التحليل'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -212,6 +254,51 @@ export default function StatisticsPage() {
           <StatCard label="إجمالي الحوادث" value={summary?.totalAccidents} color="primary" />
           <StatCard label="إجمالي الوفيات" value={summary?.totalDeaths} color="danger" />
           <StatCard label="إجمالي الجرحى" value={summary?.totalInjuries} color="warning" />
+        </div>
+      )}
+
+      {dateMode === 'comparison' && comparison && (
+        <div className="card" style={{ marginBottom: 24, background: 'linear-gradient(135deg, #f8f9fb 0%, #eef2f7 100%)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BarChart3 size={18} color="var(--primary)" /> مقارنة بين الفترتين
+            </h3>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              {comparison.period?.start} ← {comparison.period?.end}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+            {[
+              { label: 'الحوادث', key: 'accidents', icon: '🚗' },
+              { label: 'الوفيات', key: 'deaths', icon: '💀' },
+              { label: 'معدل القتلى', key: 'lethalityRate', icon: '📊' },
+            ].map(({ label, key, icon }) => {
+              const m = comparison.comparison?.[key];
+              if (!m) return null;
+              const changeColor = m.change === null ? 'var(--text-secondary)' : m.change > 0 ? 'var(--danger)' : 'var(--success)';
+              const changeSign = m.change !== null ? (m.change > 0 ? '+' : '') : '';
+              return (
+                <div key={key} style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>{icon}</span> {label}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}>{m.current}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>الفترة الحالية</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-secondary)' }}>{m.previous}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>الفترة السابقة</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: changeColor }}>
+                    {m.change !== null ? `${changeSign}${m.change}%` : 'لا مقارنة'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -251,7 +338,12 @@ export default function StatisticsPage() {
       <div className="charts-grid">
         {settings.stats.govBar && (
           <div className="chart-card">
-            <div className="chart-title">🏛️ الحوادث حسب الولاية (أعلى 10)</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="chart-title" style={{ margin: 0 }}>🏛️ الحوادث حسب الولاية (أعلى 10)</div>
+              <button className="btn btn-outline" onClick={() => navigate('/statistics/governorate')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+                <Eye size={14} /> عرض التفاصيل
+              </button>
+            </div>
             {byGov.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height={380}>
                 <BarChart data={byGov} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
@@ -268,7 +360,12 @@ export default function StatisticsPage() {
 
         {settings.stats.causePie && (
           <div className="chart-card">
-            <div className="chart-title">⚠️ توزيع الأسباب</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="chart-title" style={{ margin: 0 }}>⚠️ توزيع الأسباب</div>
+              <button className="btn btn-outline" onClick={() => navigate('/statistics/cause')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+                <Eye size={14} /> عرض التفاصيل
+              </button>
+            </div>
             {byCause.length === 0 ? <EmptyChart /> : (
               <>
                 <ResponsiveContainer width="100%" height={180}>
@@ -295,7 +392,12 @@ export default function StatisticsPage() {
 
         {settings.stats.brandBar && (
           <div className="chart-card">
-            <div className="chart-title">🚗 الحوادث حسب ماركة السيارة</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="chart-title" style={{ margin: 0 }}>🚗 الحوادث حسب ماركة السيارة</div>
+              <button className="btn btn-outline" onClick={() => navigate('/statistics/brand')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+                <Eye size={14} /> عرض التفاصيل
+              </button>
+            </div>
             {byBrand.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={byBrand} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
@@ -312,14 +414,19 @@ export default function StatisticsPage() {
 
         {settings.stats.hourBar && (
           <div className="chart-card">
-            <div className="chart-title">🕐 توزيع الحوادث حسب ساعة اليوم</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="chart-title" style={{ margin: 0 }}>🕐 توزيع الحوادث حسب ساعة اليوم</div>
+              <button className="btn btn-outline" onClick={() => navigate('/statistics/hour')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+                <Eye size={14} /> عرض التفاصيل
+              </button>
+            </div>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={byTime} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis dataKey="period" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl' }} />
-                <Bar dataKey="accidents" fill="#27ae60" radius={[4, 4, 0, 0]} name="حوادث" barSize={26} />
+                <Bar dataKey="count" fill="#27ae60" radius={[4, 4, 0, 0]} name="حوادث" barSize={26} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -328,7 +435,12 @@ export default function StatisticsPage() {
 
       {showMunicipalityDropdown && (
         <div className="card" style={{ marginBottom: 24 }}>
-          <div className="chart-title">🏘️ الحوادث حسب المعتمدية</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="chart-title" style={{ margin: 0 }}>🏘️ الحوادث حسب المعتمدية</div>
+            <button className="btn btn-outline" onClick={() => navigate('/statistics/city')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+              <Eye size={14} /> عرض التفاصيل
+            </button>
+          </div>
           {byCity.length === 0 ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height={380}>
               <BarChart data={byCity} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
@@ -346,7 +458,12 @@ export default function StatisticsPage() {
 
       {settings.stats.trendLine && (
         <div className="chart-card" style={{ marginBottom: 24 }}>
-          <div className="chart-title">📈 الاتجاه الشهري — الحوادث والوفيات والجرحى</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="chart-title" style={{ margin: 0 }}>📈 الاتجاه الشهري — الحوادث والوفيات والجرحى</div>
+            <button className="btn btn-outline" onClick={() => navigate('/statistics/month')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
+              <Eye size={14} /> عرض التفاصيل
+            </button>
+          </div>
           {trends.length === 0 ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>

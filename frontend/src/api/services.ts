@@ -102,7 +102,7 @@ export const getAnalyticsByHour = (filters?: AnalyticsFilters) =>
   client.get('/analytics/by-hour', { params: buildFilterParams(filters) }).then((r) =>
     r.data.map((d: any) => ({
       period: `${String(d.hour).padStart(2, '0')}:00`,
-      accidents: d.count,
+      count: d.count,
     }))
   );
 
@@ -135,6 +135,9 @@ export const createUser = (data: { username: string; password: string; fullName:
 
 export const updateUser = (id: string, data: { fullName?: string; role?: string; isActive?: boolean; password?: string }) =>
   client.put(`/users/${id}`, data).then((r) => r.data);
+
+export const deleteUser = (id: string) =>
+  client.delete(`/users/${id}`).then((r) => r.data);
 
 // Audit logs (admin only)
 export const getAuditLogs = (params?: Record<string, unknown>) =>

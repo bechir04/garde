@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getUsers, createUser, updateUser } from '../api/services';
+import { getUsers, createUser, updateUser, deleteUser } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Pencil, ShieldCheck, ShieldOff, X } from 'lucide-react';
+import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Trash2 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 
 interface User {
@@ -104,6 +104,17 @@ export default function UsersPage() {
     }
   };
 
+  const handleDelete = async (u: User) => {
+    if (!confirm(`هل أنت متأكد من حذف المستخدم "${u.fullName}"؟ لا يمكن التراجع عن هذه العملية.`)) return;
+    try {
+      await deleteUser(u.id);
+      success('تم الحذف', 'تم حذف المستخدم بنجاح');
+      load();
+    } catch {
+      toastError('خطأ', 'فشل في حذف المستخدم');
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -162,7 +173,6 @@ export default function UsersPage() {
                           className="btn btn-outline btn-icon btn-sm"
                           title="تعديل"
                           onClick={() => openEdit(u)}
-                          disabled={u.id === me?.id}
                         >
                           <Pencil size={14} />
                         </button>
@@ -173,6 +183,14 @@ export default function UsersPage() {
                           disabled={u.id === me?.id}
                         >
                           {u.isActive ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
+                        </button>
+                        <button
+                          className="btn btn-danger btn-icon btn-sm"
+                          title="حذف"
+                          onClick={() => handleDelete(u)}
+                          disabled={u.id === me?.id}
+                        >
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

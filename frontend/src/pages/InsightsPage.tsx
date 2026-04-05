@@ -66,6 +66,9 @@ export default function InsightsPage() {
   const [applied, setApplied] = useState<{ dateFrom: string; dateTo: string; governorateId: string; cityId: string }>({ dateFrom: '', dateTo: '', governorateId: '', cityId: '' });
   const [activeTab, setActiveTab] = useState<'overview' | 'heatmap' | 'brands'>('overview');
   const [expandedRec, setExpandedRec] = useState<number | null>(null);
+  const [editingRec, setEditingRec] = useState<number | null>(null);
+  const [recText, setRecText] = useState('');
+  const [recTitle, setRecTitle] = useState('');
 
   const showMunicipalityDropdown = govFilter === '18';
 
@@ -683,46 +686,122 @@ export default function InsightsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {d.recommendations.map((r: any, i: number) => {
               const isExpanded = expandedRec === i;
+              const isEditing = editingRec === i;
               return (
                 <div
                   key={i}
-                  onClick={() => setExpandedRec(isExpanded ? null : i)}
                   style={{
-                    display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 10,
+                    borderRadius: 12,
                     background: typeColors[r.type] || '#f8f9fb',
                     border: `1px solid ${typeBorder[r.type] || 'var(--border)'}`,
-                    alignItems: 'flex-start', cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    boxShadow: isExpanded ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: isExpanded ? '0 4px 16px rgba(0,0,0,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
                   }}
                 >
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                    background: severityColors[r.type] || 'var(--primary)',
-                    color: '#fff', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: 16, fontWeight: 800,
-                  }}>{i + 1}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: isExpanded ? 6 : 0 }}>{r.title}</div>
+                  {/* Header - always visible */}
+                  <div
+                    onClick={() => { if (!isEditing) setExpandedRec(isExpanded ? null : i); }}
+                    style={{
+                      display: 'flex', gap: 14, padding: '16px 18px',
+                      alignItems: 'center', cursor: isEditing ? 'default' : 'pointer',
+                    }}
+                  >
                     <div style={{
-                      fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
-                      maxHeight: isExpanded ? 'none' : '40px',
-                      overflow: 'hidden',
-                      position: 'relative',
-                    }}>
-                      {r.detail}
-                      {!isExpanded && (
-                        <div style={{
-                          position: 'absolute', bottom: 0, left: 0, right: 0, height: 20,
-                          background: `linear-gradient(transparent, ${typeColors[r.type] || '#f8f9fb'})`,
-                        }} />
+                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                      background: severityColors[r.type] || 'var(--primary)',
+                      color: '#fff', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: 15, fontWeight: 800,
+                      boxShadow: `0 2px 8px ${severityColors[r.type] || 'var(--primary)'}40`,
+                    }}>{i + 1}</div>
+                    <div style={{ flex: 1 }}>
+                      {isEditing ? (
+                        <input
+                          value={recTitle}
+                          onChange={(e) => setRecTitle(e.target.value)}
+                          style={{
+                            width: '100%', border: '1px solid var(--primary)', borderRadius: 6,
+                            padding: '6px 10px', fontSize: 14, fontWeight: 700,
+                            background: '#fff', outline: 'none', fontFamily: 'inherit',
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <div style={{ fontWeight: 700, fontSize: 14 }}>{r.title}</div>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--primary)', marginTop: 4, fontWeight: 600 }}>
-                      {isExpanded ? '▲ إخفاء' : '▼ عرض المزيد'}
-                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+                      background: severityColors[r.type] || 'var(--primary)',
+                      color: '#fff', flexShrink: 0,
+                    }}>{severityLabels[r.type] || r.type}</span>
+                    <ChevronLeft size={18} color="var(--text-secondary)" style={{ flexShrink: 0, transition: 'transform 0.3s', transform: isExpanded ? 'rotate(90deg)' : undefined }} />
                   </div>
-                  <ChevronLeft size={18} color="var(--text-secondary)" style={{ flexShrink: 0, marginTop: 8, transition: 'transform 0.2s', transform: isExpanded ? 'rotate(90deg)' : undefined }} />
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div style={{
+                      padding: '0 18px 16px 18px',
+                      animation: 'slideDown 0.3s ease',
+                    }}>
+                      <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+                      {isEditing ? (
+                        <textarea
+                          value={recText}
+                          onChange={(e) => setRecText(e.target.value)}
+                          rows={4}
+                          style={{
+                            width: '100%', border: '1px solid var(--primary)', borderRadius: 8,
+                            padding: '10px 12px', fontSize: 13, lineHeight: 1.7,
+                            background: '#fff', outline: 'none', resize: 'vertical',
+                            fontFamily: 'inherit', color: 'var(--text-primary)',
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--text-secondary)' }}>
+                          {r.detail}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'flex-end' }}>
+                        {isEditing ? (
+                          <>
+                            <button
+                              className="btn btn-outline"
+                              onClick={() => {
+                                d.recommendations[i].title = recTitle;
+                                d.recommendations[i].detail = recText;
+                                setData({ ...d });
+                                setEditingRec(null);
+                              }}
+                              style={{ fontSize: 12, padding: '6px 14px' }}
+                            >
+                              ✓ حفظ
+                            </button>
+                            <button
+                              className="btn btn-outline"
+                              onClick={() => setEditingRec(null)}
+                              style={{ fontSize: 12, padding: '6px 14px' }}
+                            >
+                              ✕ إلغاء
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="btn btn-outline"
+                            onClick={() => {
+                              setEditingRec(i);
+                              setRecText(r.detail);
+                              setRecTitle(r.title);
+                            }}
+                            style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
+                          >
+                            ✏️ تعديل
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

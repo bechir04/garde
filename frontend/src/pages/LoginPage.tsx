@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Shield, Lock, User, ChevronLeft } from 'lucide-react';
 import logo from '../assets/garde_national-removebg-preview.png';
 
 const SAVED_USERNAME_KEY = 'gn_saved_username';
@@ -37,79 +37,119 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="logo">
-          <img
-            src={logo}
-            alt="الحرس الوطني"
-            style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))' }}
-          />
-        </div>
-        <h1>نضام ادارة حوادث المرور - محمد المولهي</h1>
-        <p className="subtitle">الحرس الوطني</p>
+      {/* Background decoration */}
+      <div className="login-bg-pattern" />
 
-        {error && <div className="login-error">{error}</div>}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">اسم المستخدم</label>
-            <input
-              className="form-input"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="أدخل اسم المستخدم"
-              required
-              autoFocus
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">كلمة المرور</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                className="form-input"
-                type={showPass ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="أدخل كلمة المرور"
-                required
-                style={{ paddingLeft: 40 }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                style={{
-                  position: 'absolute', left: 10, top: '50%',
-                  transform: 'translateY(-50%)', background: 'none',
-                  border: 'none', color: 'var(--text-secondary)',
-                }}
-              >
-                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+      <div className="login-container">
+        {/* Left side - Branding panel (hidden on mobile) */}
+        <div className="login-brand-panel">
+          <div className="login-brand-content">
+            <div className="login-brand-logo">
+              <img src={logo} alt="الحرس الوطني" />
             </div>
+            <h2>نضام ادارة حوادث المرور</h2>
+            <p className="login-brand-sub">محمد المولهي</p>
+            <div className="login-brand-divider" />
+            <p className="login-brand-desc">الحرس الوطني التونسي</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 8px' }}>
-            <input
-              id="rememberMe"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
-            />
-            <label htmlFor="rememberMe" style={{ fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer', userSelect: 'none' }}>
-              تذكر اسم المستخدم
-            </label>
+          <div className="login-brand-footer">
+            © {new Date().getFullYear()} جميع الحقوق محفوظة
           </div>
+        </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-            style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: '12px 20px' }}
-          >
-            {loading ? 'جاري الدخول...' : 'تسجيل الدخول'}
-          </button>
-        </form>
+        {/* Right side - Login form */}
+        <div className="login-form-panel">
+          <div className="login-form-inner">
+            {/* Mobile header */}
+            <div className="login-mobile-header">
+              <img src={logo} alt="الحرس الوطني" className="login-mobile-logo" />
+              <h1>نضام ادارة حوادث المرور</h1>
+              <p className="login-mobile-sub">محمد المولهي — الحرس الوطني</p>
+            </div>
+
+            {/* Desktop header */}
+            <div className="login-form-header">
+              <h3>تسجيل الدخول</h3>
+              <p>أدخل بياناتك للمتابعة</p>
+            </div>
+
+            {error && (
+              <div className="login-error">
+                <Shield size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="login-field">
+                <label className="login-field-label">اسم المستخدم</label>
+                <div className="login-input-wrapper">
+                  <User size={18} className="login-input-icon" />
+                  <input
+                    className="login-input"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="أدخل اسم المستخدم"
+                    required
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="login-field">
+                <label className="login-field-label">كلمة المرور</label>
+                <div className="login-input-wrapper">
+                  <Lock size={18} className="login-input-icon" />
+                  <input
+                    className="login-input"
+                    type={showPass ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="أدخل كلمة المرور"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="login-toggle-pass"
+                    onClick={() => setShowPass(!showPass)}
+                  >
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="login-options">
+                <label className="login-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <span>تذكر اسم المستخدم</span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="login-submit-btn"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="login-spinner" />
+                    جاري الدخول...
+                  </>
+                ) : (
+                  <>
+                    تسجيل الدخول
+                    <ChevronLeft size={18} />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
