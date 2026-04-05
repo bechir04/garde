@@ -6,6 +6,7 @@ export type AnalyticsFilters = {
   dateTo?: string;
   governorateId?: number;
   cityId?: number;
+  brandId?: number;
 };
 
 function buildFilterWhere(filters: AnalyticsFilters): any {
@@ -21,6 +22,9 @@ function buildFilterWhere(filters: AnalyticsFilters): any {
   }
   if (filters.governorateId) where.governorateId = Number(filters.governorateId);
   if (filters.cityId) where.cityId = Number(filters.cityId);
+  if (filters.brandId) {
+    where.OR = [{ vehicleBrand1Id: Number(filters.brandId) }, { vehicleBrand2Id: Number(filters.brandId) }];
+  }
   return where;
 }
 
