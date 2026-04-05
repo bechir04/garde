@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Trash2, Smartphone } from 'lucide-react';
+import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Trash2 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 
 interface User {
