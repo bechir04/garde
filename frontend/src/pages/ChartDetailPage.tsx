@@ -18,7 +18,7 @@ const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d3
 const chartConfig: Record<string, { title: string; api: string; color: string }> = {
   governorate: { title: 'الحوادث حسب الولاية', api: 'governorate', color: '#1a5276' },
   cause: { title: 'توزيع الأسباب', api: 'cause', color: '#e67e22' },
-  brand: { title: 'الاطراف المتادخلة', api: 'brand', color: '#27ae60' },
+  brand: { title: 'حسب الصنف', api: 'brand', color: '#27ae60' },
   hour: { title: 'توزيع الحوادث حسب ساعة اليوم', api: 'hour', color: '#8e44ad' },
   month: { title: 'الاتجاه الشهري', api: 'month', color: '#2980b9' },
   city: { title: 'الحوادث حسب المعتمدية', api: 'city', color: '#16a085' },

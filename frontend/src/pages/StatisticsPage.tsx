@@ -225,7 +225,8 @@ export default function StatisticsPage() {
                   onChange={(e) => handleMunicipalityChange(e.target.value)}
                   style={{ fontSize: 13, padding: '8px 12px' }}
                 >
-                  <option value="">جميع البلديات</option>
+                  <option value="">
+كل المعتمديات</option>
                   {SIDI_BOUZID_MUNICIPALITIES.map((m) => (
                     <option key={m.id} value={m.id}>{m.nameAr}</option>
                   ))}
@@ -393,7 +394,7 @@ export default function StatisticsPage() {
         {settings.stats.brandBar && (
           <div className="chart-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="chart-title" style={{ margin: 0 }}>🚗 الاطراف المتادخلة</div>
+              <div className="chart-title" style={{ margin: 0 }}>🚗 حسب الصنف</div>
               <button className="btn btn-outline" onClick={() => navigate('/statistics/brand')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
                 <Eye size={14} /> عرض التفاصيل
               </button>
