@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getUsers, createUser, updateUser, deleteUser } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Trash2 } from 'lucide-react';
+import { UserPlus, Pencil, ShieldCheck, ShieldOff, X, Trash2, Smartphone } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 
 interface User {
@@ -39,6 +39,12 @@ export default function UsersPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   // Redirect non-admins
   useEffect(() => {
@@ -129,79 +135,145 @@ export default function UsersPage() {
 
       <div className="card">
         {loading ? <div className="spinner" /> : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>الاسم الكامل</th>
-                  <th>اسم المستخدم</th>
-                  <th>الدور</th>
-                  <th>الحالة</th>
-                  <th>تاريخ الإنشاء</th>
-                  <th>إجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: 'var(--primary)', color: '#fff',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontWeight: 700, fontSize: 14, flexShrink: 0,
-                        }}>
-                          {u.fullName?.charAt(0) || '؟'}
-                        </div>
-                        <span style={{ fontWeight: 500 }}>{u.fullName}</span>
-                      </div>
-                    </td>
-                    <td style={{ color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{u.username}</td>
-                    <td><span className={`badge ${roleBadge[u.role]}`}>{roleLabels[u.role]}</span></td>
-                    <td>
-                      <span className={`badge ${u.isActive ? 'badge-success' : 'badge-danger'}`}>
-                        {u.isActive ? 'نشط' : 'معطّل'}
-                      </span>
-                    </td>
-                    <td style={{ color: 'var(--text-secondary)' }}>
+          isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {users.map((u) => (
+                <div key={u.id} style={{
+                  background: '#fff',
+                  border: `1px solid var(--border)`,
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '14px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div style={{
+                      width: 42, height: 42, borderRadius: '50%',
+                      background: 'var(--primary)', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: 16, flexShrink: 0,
+                    }}>
+                      {u.fullName?.charAt(0) || '؟'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{u.fullName}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{u.username}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                    <span className={`badge ${roleBadge[u.role]}`}>{roleLabels[u.role]}</span>
+                    <span className={`badge ${u.isActive ? 'badge-success' : 'badge-danger'}`}>
+                      {u.isActive ? 'نشط' : 'معطّل'}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                       {new Date(u.createdAt).toLocaleDateString('ar-DZ')}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button
-                          className="btn btn-outline btn-icon btn-sm"
-                          title="تعديل"
-                          onClick={() => openEdit(u)}
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          className={`btn btn-icon btn-sm ${u.isActive ? 'btn-danger' : 'btn-outline'}`}
-                          title={u.isActive ? 'تعطيل' : 'تفعيل'}
-                          onClick={() => toggleActive(u)}
-                          disabled={u.id === me?.id}
-                        >
-                          {u.isActive ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
-                        </button>
-                        <button
-                          className="btn btn-danger btn-icon btn-sm"
-                          title="حذف"
-                          onClick={() => handleDelete(u)}
-                          disabled={u.id === me?.id}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => openEdit(u)}
+                      disabled={u.id === me?.id}
+                      style={{ flex: 1, fontSize: 12, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                    >
+                      <Pencil size={13} /> تعديل
+                    </button>
+                    <button
+                      className={`btn btn-sm ${u.isActive ? 'btn-danger' : 'btn-outline'}`}
+                      onClick={() => toggleActive(u)}
+                      disabled={u.id === me?.id}
+                      style={{ flex: 1, fontSize: 12, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                    >
+                      {u.isActive ? <><ShieldOff size={13} /> تعطيل</> : <><ShieldCheck size={13} /> تفعيل</>}
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(u)}
+                      disabled={u.id === me?.id}
+                      style={{ flex: 1, fontSize: 12, padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                    >
+                      <Trash2 size={13} /> حذف
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {users.length === 0 && (
+                <div className="empty-state">لا يوجد مستخدمون</div>
+              )}
+            </div>
+          ) : (
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>الاسم الكامل</th>
+                    <th>اسم المستخدم</th>
+                    <th>الدور</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>إجراءات</th>
                   </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr><td colSpan={6} className="empty-state">لا يوجد مستخدمون</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{
+                            width: 36, height: 36, borderRadius: '50%',
+                            background: 'var(--primary)', color: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontWeight: 700, fontSize: 14, flexShrink: 0,
+                          }}>
+                            {u.fullName?.charAt(0) || '؟'}
+                          </div>
+                          <span style={{ fontWeight: 500 }}>{u.fullName}</span>
+                        </div>
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{u.username}</td>
+                      <td><span className={`badge ${roleBadge[u.role]}`}>{roleLabels[u.role]}</span></td>
+                      <td>
+                        <span className={`badge ${u.isActive ? 'badge-success' : 'badge-danger'}`}>
+                          {u.isActive ? 'نشط' : 'معطّل'}
+                        </span>
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)' }}>
+                        {new Date(u.createdAt).toLocaleDateString('ar-DZ')}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            className="btn btn-outline btn-icon btn-sm"
+                            title="تعديل"
+                            onClick={() => openEdit(u)}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            className={`btn btn-icon btn-sm ${u.isActive ? 'btn-danger' : 'btn-outline'}`}
+                            title={u.isActive ? 'تعطيل' : 'تفعيل'}
+                            onClick={() => toggleActive(u)}
+                            disabled={u.id === me?.id}
+                          >
+                            {u.isActive ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
+                          </button>
+                          <button
+                            className="btn btn-danger btn-icon btn-sm"
+                            title="حذف"
+                            onClick={() => handleDelete(u)}
+                            disabled={u.id === me?.id}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr><td colSpan={6} className="empty-state">لا يوجد مستخدمون</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )
         )}
       </div>
 

@@ -1,10 +1,135 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { Car, Skull, AlertTriangle, TrendingUp, Plus } from 'lucide-react';
+import { Car, Skull, AlertTriangle, TrendingUp, Plus, MapPin, Clock, ChevronRight, Calendar } from 'lucide-react';
 import { getAnalyticsSummary, getAnalyticsByCause, getAnalyticsByMonth, getAccidents } from '../api/services';
 
 const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d35400','#16a085'];
+
+function TodayAccidentsBanner() {
+  const [todayAccidents, setTodayAccidents] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const today = new Date().toISOString().split('T')[0];
+  const todayFormatted = new Date().toLocaleDateString('ar-TN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  useEffect(() => {
+    getAccidents({ page: 1, limit: 50, sortBy: 'accidentDate', sortOrder: 'desc', dateFrom: today, dateTo: today })
+      .then((res: any) => setTodayAccidents(res.data || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (todayAccidents.length <= 1) return;
+    intervalRef.current = setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % todayAccidents.length);
+        setIsTransitioning(false);
+      }, 500);
+    }, 5000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [todayAccidents.length]);
+
+  if (todayAccidents.length === 0) {
+    return (
+      <div className="today-banner today-banner-empty">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'center', padding: '20px 0' }}>
+          <div className="today-empty-icon">
+            <Calendar size={28} />
+          </div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>لا توجد حوادث اليوم</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>يوم هادئ — {todayFormatted}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const accident = todayAccidents[currentIndex];
+  const totalDeaths = todayAccidents.reduce((s: number, a: any) => s + (a.deathsCount || 0), 0);
+  const totalInjuries = todayAccidents.reduce((s: number, a: any) => s + (a.injuriesCount || 0), 0);
+  const severity = accident.deathsCount > 0 ? 'danger' : accident.injuriesCount > 2 ? 'warning' : 'info';
+  const severityColors = { danger: '#e74c3c', warning: '#e67e22', info: '#2980b9' };
+  const severityBg = { danger: 'rgba(231,76,60,0.08)', warning: 'rgba(230,126,34,0.08)', info: 'rgba(41,128,185,0.08)' };
+  const severityBorder = { danger: 'rgba(231,76,60,0.25)', warning: 'rgba(230,126,34,0.25)', info: 'rgba(41,128,185,0.25)' };
+
+  return (
+    <div className="today-banner" style={{ background: severityBg[severity], borderColor: severityBorder[severity] }}>
+      {/* Header with stats */}
+      <div className="today-banner-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="today-header-dot" style={{ background: severityColors[severity] }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>حوادث اليوم</span>
+          <span className="today-badge" style={{ background: severityColors[severity] }}>{todayAccidents.length}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="today-stat">
+            <span className="today-stat-value danger">{totalDeaths}</span>
+            <span className="today-stat-label">وفيات</span>
+          </div>
+          <div className="today-stat">
+            <span className="today-stat-value warning">{totalInjuries}</span>
+            <span className="today-stat-label">جرحى</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Sliding content */}
+      <div
+        className="today-banner-content"
+        style={{
+          opacity: isTransitioning ? 0 : 1,
+          transform: isTransitioning ? 'translateY(12px)' : 'translateY(0)',
+          transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <div className="today-accident-card">
+          <div className="today-accident-severity" style={{ background: severityColors[severity] }}>
+            {accident.deathsCount > 0 ? <Skull size={22} /> : <AlertTriangle size={22} />}
+          </div>
+          <div className="today-accident-info">
+            <div className="today-accident-route">{accident.route || '—'}</div>
+            <div className="today-accident-details">
+              <span className="today-detail"><MapPin size={13} /> {accident.governorate?.nameAr || '—'}{accident.city?.nameAr ? ` — ${accident.city.nameAr}` : ''}</span>
+              {accident.accidentTime && <span className="today-detail"><Clock size={13} /> {accident.accidentTime}</span>}
+              <span className="today-detail">وفيات: <strong style={{ color: '#e74c3c' }}>{accident.deathsCount}</strong></span>
+              <span className="today-detail">جرحى: <strong style={{ color: '#e67e22' }}>{accident.injuriesCount}</strong></span>
+            </div>
+          </div>
+          <Link to={`/accidents/${accident.id}`} className="today-view-link" title="عرض التفاصيل">
+            <ChevronRight size={18} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Progress dots */}
+      {todayAccidents.length > 1 && (
+        <div className="today-dots">
+          {todayAccidents.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                  setCurrentIndex(i);
+                  setIsTransitioning(false);
+                }, 500);
+              }}
+              className={`today-dot ${i === currentIndex ? 'active' : ''}`}
+              style={{
+                width: i === currentIndex ? 28 : 8,
+                background: i === currentIndex ? severityColors[severity] : 'rgba(0,0,0,0.12)',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<any>(null);
@@ -40,6 +165,8 @@ export default function DashboardPage() {
           <Plus size={18} /> تسجيل حادث جديد
         </Link>
       </div>
+
+      <TodayAccidentsBanner />
 
       <div className="kpi-grid">
         <div className="kpi-card">

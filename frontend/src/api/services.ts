@@ -41,6 +41,7 @@ export type AnalyticsFilters = {
   dateTo?: string;
   governorateId?: string;
   cityId?: string;
+  brandId?: string;
 };
 
 const buildFilterParams = (filters?: AnalyticsFilters) => {
@@ -50,6 +51,7 @@ const buildFilterParams = (filters?: AnalyticsFilters) => {
   if (filters.dateTo) params.dateTo = filters.dateTo;
   if (filters.governorateId) params.governorateId = filters.governorateId;
   if (filters.cityId) params.cityId = filters.cityId;
+  if (filters.brandId) params.brandId = filters.brandId;
   return params;
 };
 

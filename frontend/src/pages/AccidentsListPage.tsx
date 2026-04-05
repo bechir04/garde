@@ -214,6 +214,25 @@ export default function AccidentsListPage() {
             {isMobile ? (
               /* Mobile card view */
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {canDelete && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#f8f9fb', borderRadius: 'var(--radius-sm)', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                        onChange={toggleAll}
+                        style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>تحديد الكل</span>
+                    </div>
+                    {someSelected && (
+                      <span style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>
+                        {selectAll ? data.total : selected.size} محدد
+                      </span>
+                    )}
+                  </div>
+                )}
                 {rows.length === 0 && (
                   <div className="empty-state">لا توجد حوادث مطابقة للبحث</div>
                 )}

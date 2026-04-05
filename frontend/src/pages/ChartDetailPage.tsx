@@ -7,7 +7,7 @@ import {
 import {
   getAnalyticsByGovernorate, getAnalyticsByCause,
   getAnalyticsByBrand, getAnalyticsByHour, getAnalyticsByMonth,
-  getAnalyticsByCity, getGovernorates, getIntelligence,
+  getAnalyticsByCity, getGovernorates, getIntelligence, getBrands,
 } from '../api/services';
 import type { AnalyticsFilters } from '../api/services';
 import { ArrowLeft, Filter, Calendar, MapPin, Building2, RotateCcw, TrendingDown, BarChart3 } from 'lucide-react';
@@ -18,7 +18,7 @@ const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d3
 const chartConfig: Record<string, { title: string; api: string; color: string }> = {
   governorate: { title: 'الحوادث حسب الولاية', api: 'governorate', color: '#1a5276' },
   cause: { title: 'توزيع الأسباب', api: 'cause', color: '#e67e22' },
-  brand: { title: 'الحوادث حسب ماركة السيارة', api: 'brand', color: '#27ae60' },
+  brand: { title: 'الاطراف المتادخلة', api: 'brand', color: '#27ae60' },
   hour: { title: 'توزيع الحوادث حسب ساعة اليوم', api: 'hour', color: '#8e44ad' },
   month: { title: 'الاتجاه الشهري', api: 'month', color: '#2980b9' },
   city: { title: 'الحوادث حسب المعتمدية', api: 'city', color: '#16a085' },
@@ -31,6 +31,7 @@ export default function ChartDetailPage() {
   if (!config) return <div style={{ padding: 40, textAlign: 'center' }}>الرسم غير موجود</div>;
 
   const [governorates, setGovernorates] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<AnalyticsFilters>({});
@@ -45,6 +46,7 @@ export default function ChartDetailPage() {
 
   const showMunicipalityDropdown = filters.governorateId === '18';
   const isHourPage = config.api === 'hour';
+  const isBrandPage = config.api === 'brand';
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -74,6 +76,7 @@ export default function ChartDetailPage() {
 
   useEffect(() => {
     getGovernorates().then(setGovernorates);
+    getBrands().then(setBrands);
   }, []);
 
   useEffect(() => {
@@ -116,6 +119,10 @@ export default function ChartDetailPage() {
     setCausePage(1);
     setCompareDate('');
     setCompareData([]);
+  };
+
+  const handleBrandChange = (brandId: string) => {
+    setFilters((prev) => ({ ...prev, brandId: brandId || undefined }));
   };
 
   const hasActiveFilters = !!(filters.dateFrom || filters.dateTo || filters.governorateId || filters.cityId);
@@ -378,6 +385,26 @@ export default function ChartDetailPage() {
                   <option value="">جميع المعتمديات</option>
                   {SIDI_BOUZID_MUNICIPALITIES.map((m) => (
                     <option key={m.id} value={m.id}>{m.nameAr}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {isBrandPage && (
+              <div className="form-group" style={{ flex: '1 1 180px', marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: 12, marginBottom: 4 }}>
+                  <MapPin size={12} style={{ display: 'inline', marginLeft: 4 }} />
+                  الطرف
+                </label>
+                <select
+                  className="form-input"
+                  value={filters.brandId || ''}
+                  onChange={(e) => handleBrandChange(e.target.value)}
+                  style={{ fontSize: 13, padding: '8px 12px' }}
+                >
+                  <option value="">جميع الاطراف</option>
+                  {brands.map((b: any) => (
+                    <option key={b.id} value={b.id}>{b.nameAr}</option>
                   ))}
                 </select>
               </div>

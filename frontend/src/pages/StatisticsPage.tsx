@@ -393,7 +393,7 @@ export default function StatisticsPage() {
         {settings.stats.brandBar && (
           <div className="chart-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="chart-title" style={{ margin: 0 }}>🚗 الحوادث حسب ماركة السيارة</div>
+              <div className="chart-title" style={{ margin: 0 }}>🚗 الاطراف المتادخلة</div>
               <button className="btn btn-outline" onClick={() => navigate('/statistics/brand')} style={{ fontSize: 12, padding: '6px 12px', flexShrink: 0 }}>
                 <Eye size={14} /> عرض التفاصيل
               </button>

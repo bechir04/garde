@@ -165,22 +165,24 @@ export default function SearchableSelect({
 
           {/* Create new option */}
           {showCreate && (
-            <div
+            <button
+              type="button"
               onClick={handleCreate}
               style={{
-                padding: '10px 14px', fontSize: 13, cursor: creating ? 'not-allowed' : 'pointer',
+                width: '100%', padding: '10px 14px', fontSize: 13, cursor: creating ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', gap: 8,
                 color: 'var(--success)', fontWeight: 600,
                 background: 'rgba(39,174,96,0.04)',
                 borderTop: '1px solid var(--border)',
+                border: 'none', borderBottom: 'none',
                 opacity: creating ? 0.6 : 1,
+                fontFamily: 'inherit',
+                textAlign: 'right',
               }}
-              onMouseEnter={(e) => { if (!creating) e.currentTarget.style.background = 'rgba(39,174,96,0.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(39,174,96,0.04)'; }}
             >
               <Plus size={15} />
               {creating ? 'جاري الإضافة...' : `إضافة "${query.trim()}" كعنصر جديد`}
-            </div>
+            </button>
           )}
         </div>
       )}

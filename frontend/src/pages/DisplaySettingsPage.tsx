@@ -7,7 +7,7 @@ const statsLabels: Record<string, string> = {
   map: 'معاينة الخريطة التفاعلية',
   govBar: 'الحوادث حسب الولاية',
   causePie: 'توزيع الأسباب',
-  brandBar: 'الحوادث حسب ماركة السيارة',
+  brandBar: 'الاطراف المتادخلة',
   hourBar: 'توزيع الحوادث حسب ساعة اليوم',
   trendLine: 'الاتجاه الشهري',
 };
