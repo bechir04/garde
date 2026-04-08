@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer,
-  XAxis, YAxis, Tooltip, Legend, LineChart, Line, CartesianGrid,
+  XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from 'recharts';
 import {
   getAnalyticsSummary, getAnalyticsByGovernorate, getAnalyticsByCause,
