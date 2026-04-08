@@ -266,9 +266,9 @@ export class AnalyticsService {
       if (periodStart > periodEnd) {
         [periodStart, periodEnd] = [periodEnd, periodStart];
       }
-      const len = periodEnd.getTime() - periodStart.getTime();
-      prevEnd = new Date(periodStart.getTime() - 86400000);
-      prevStart = new Date(prevEnd.getTime() - len);
+      // Previous period: same months but previous year
+      prevEnd = new Date(periodEnd.getFullYear() - 1, periodEnd.getMonth(), periodEnd.getDate(), 23, 59, 59);
+      prevStart = new Date(periodStart.getFullYear() - 1, periodStart.getMonth(), 1);
     } else {
       periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
       periodEnd = now;
