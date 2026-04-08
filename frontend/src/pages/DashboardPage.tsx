@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { Car, Skull, AlertTriangle, Plus, MapPin, Clock, ChevronRight, Calendar } from 'lucide-react';
+import { Car, Skull, AlertTriangle, Plus, MapPin, Clock, ChevronRight, Calendar, TrendingUp } from 'lucide-react';
 import { getAnalyticsSummary, getAnalyticsByCause, getAnalyticsByMonth, getAccidents } from '../api/services';
 
 const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d35400','#16a085'];
@@ -191,6 +191,13 @@ export default function DashboardPage() {
           <div>
             <div className="kpi-value">{summary?.totalInjuries || 0}</div>
             <div className="kpi-label">إجمالي الجرحى</div>
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-icon success"><TrendingUp size={24} /></div>
+          <div>
+            <div className="kpi-value">{summary?.monthlyAccidents ?? 0}</div>
+            <div className="kpi-label">حوادث هذا الشهر </div>
           </div>
         </div>
       </div>
