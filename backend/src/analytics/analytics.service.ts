@@ -256,8 +256,12 @@ export class AnalyticsService {
     let periodStart: Date, periodEnd: Date, prevStart: Date, prevEnd: Date;
 
     if (filters.dateFrom && filters.dateTo) {
-      periodStart = new Date(filters.dateFrom);
-      periodEnd = new Date(filters.dateTo);
+      // Round to start of month for dateFrom
+      const fromParts = filters.dateFrom.split('-');
+      periodStart = new Date(parseInt(fromParts[0]), parseInt(fromParts[1]) - 1, 1);
+      // Round to end of month for dateTo
+      const toParts = filters.dateTo.split('-');
+      periodEnd = new Date(parseInt(toParts[0]), parseInt(toParts[1]), 0, 23, 59, 59);
       // Auto-swap if dates are reversed
       if (periodStart > periodEnd) {
         [periodStart, periodEnd] = [periodEnd, periodStart];
