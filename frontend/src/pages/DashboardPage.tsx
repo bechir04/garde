@@ -241,7 +241,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="chart-card">
-          <div className="chart-title">اتجاه الحوادث الشهري</div>
+          <div className="chart-title">الحوادث الشهرية</div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={trends} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
