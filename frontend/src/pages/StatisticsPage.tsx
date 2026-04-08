@@ -36,6 +36,33 @@ export default function StatisticsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedMunicipality, setSelectedMunicipality] = useState('');
   const [dateMode, setDateMode] = useState<'range' | 'comparison'>('range');
+  const [quickFilter, setQuickFilter] = useState<'day' | 'month' | 'year' | null>(null);
+
+  const getQuickFilterDates = (filter: 'day' | 'month' | 'year') => {
+    const now = new Date();
+    let dateFrom: string, dateTo: string;
+    if (filter === 'day') {
+      const today = now.toISOString().split('T')[0];
+      dateFrom = today;
+      dateTo = today;
+    } else if (filter === 'month') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+      dateFrom = startOfMonth;
+      dateTo = endOfMonth;
+    } else {
+      dateFrom = `${now.getFullYear()}-01-01`;
+      dateTo = `${now.getFullYear()}-12-31`;
+    }
+    return { dateFrom, dateTo };
+  };
+
+  const handleQuickFilter = (filter: 'day' | 'month' | 'year') => {
+    const dates = getQuickFilterDates(filter);
+    setQuickFilter(filter);
+    setFilters({ dateFrom: dates.dateFrom, dateTo: dates.dateTo });
+    setAppliedFilters({ dateFrom: dates.dateFrom, dateTo: dates.dateTo });
+  };
 
   const showMunicipalityDropdown = filters.governorateId === '18';
 
@@ -107,6 +134,7 @@ export default function StatisticsPage() {
     setDateMode('range');
     setComparison(null);
     setAppliedFilters({});
+    setQuickFilter(null);
   };
 
   const hasActiveFilters = !!(filters.dateFrom || filters.dateTo || filters.governorateId || filters.cityId);
@@ -141,9 +169,32 @@ export default function StatisticsPage() {
             <h3 style={{ fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Filter size={16} /> فلترة البيانات
             </h3>
-            <button className="btn btn-outline" onClick={clearFilters} style={{ fontSize: 12, padding: '6px 12px' }}>
-              <RotateCcw size={14} /> إعادة تعيين
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className={`btn ${quickFilter === 'day' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => handleQuickFilter('day')}
+                style={{ fontSize: 11, padding: '4px 10px' }}
+              >
+                اليوم
+              </button>
+              <button
+                className={`btn ${quickFilter === 'month' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => handleQuickFilter('month')}
+                style={{ fontSize: 11, padding: '4px 10px' }}
+              >
+                الشهر
+              </button>
+              <button
+                className={`btn ${quickFilter === 'year' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => handleQuickFilter('year')}
+                style={{ fontSize: 11, padding: '4px 10px' }}
+              >
+                السنة
+              </button>
+              <button className="btn btn-outline" onClick={clearFilters} style={{ fontSize: 11, padding: '4px 10px' }}>
+                <RotateCcw size={12} /> إعادة
+              </button>
+            </div>
           </div>
 
           <div className="form-group" style={{ flex: '1 1 220px', marginBottom: 16 }}>
@@ -467,16 +518,16 @@ export default function StatisticsPage() {
           </div>
           {trends.length === 0 ? <EmptyChart /> : (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+              <BarChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis dataKey="period" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl', fontSize: 12 }} />
                 <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="حوادث" />
-                <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="وفيات" />
-                <Line type="monotone" dataKey="injuries" stroke="#f39c12" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} name="جرحى" />
-              </LineChart>
+                <Bar dataKey="accidents" fill="#1a5276" radius={[4, 4, 0, 0]} name="حوادث" />
+                <Bar dataKey="deaths" fill="#e74c3c" radius={[4, 4, 0, 0]} name="وفيات" />
+                <Bar dataKey="injuries" fill="#f39c12" radius={[4, 4, 0, 0]} name="جرحى" />
+              </BarChart>
             </ResponsiveContainer>
           )}
         </div>
