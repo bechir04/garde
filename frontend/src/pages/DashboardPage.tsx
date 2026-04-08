@@ -197,7 +197,7 @@ export default function DashboardPage() {
           <div className="kpi-icon success"><TrendingUp size={24} /></div>
           <div>
             <div className="kpi-value">{summary?.monthlyAccidents ?? 0}</div>
-            <div className="kpi-label">حوادث هذا الشهر</div>
+            <div className="kpi-label">حوادث هذا العام </div>
           </div>
         </div>
       </div>
