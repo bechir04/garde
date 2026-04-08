@@ -64,7 +64,7 @@ export default function AccidentsListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا الحادث؟')) return;
+    if (!confirm('هلأنت متأكد من حذف هذا الحادث؟')) return;
     setDeleting(id);
     try {
       await deleteAccident(id);
