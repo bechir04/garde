@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { Car, Skull, AlertTriangle, TrendingUp, Plus, MapPin, Clock, ChevronRight, Calendar } from 'lucide-react';
 import { getAnalyticsSummary, getAnalyticsByCause, getAnalyticsByMonth, getAccidents } from '../api/services';
 
@@ -138,12 +138,15 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const currentYear = new Date().getFullYear();
+  const yearFilter = { dateFrom: `${currentYear}-01-01`, dateTo: `${currentYear}-12-31` };
+
   useEffect(() => {
     Promise.all([
-      getAnalyticsSummary(),
-      getAnalyticsByCause(),
-      getAnalyticsByMonth(),
-      getAccidents({ page: 1, limit: 5, sortBy: 'createdAt', sortOrder: 'desc' }),
+      getAnalyticsSummary(yearFilter),
+      getAnalyticsByCause(yearFilter),
+      getAnalyticsByMonth(yearFilter),
+      getAccidents({ page: 1, limit: 5, sortBy: 'createdAt', sortOrder: 'desc', ...yearFilter }),
     ]).then(([s, c, t, a]) => {
       setSummary(s);
       setByCause(c.slice(0, 6));
@@ -240,15 +243,15 @@ export default function DashboardPage() {
         <div className="chart-card">
           <div className="chart-title">اتجاه الحوادث الشهري</div>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={trends} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+            <BarChart data={trends} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="period" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={{ direction: 'rtl', fontFamily: 'inherit', fontSize: 13 }} />
               <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
-              <Line type="monotone" dataKey="accidents" stroke="#1a5276" strokeWidth={2} dot={false} name="الحوادث" />
-              <Line type="monotone" dataKey="deaths" stroke="#e74c3c" strokeWidth={2} dot={false} name="الوفيات" />
-            </LineChart>
+              <Bar dataKey="accidents" fill="#1a5276" name="الحوادث" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="deaths" fill="#e74c3c" name="الوفيات" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

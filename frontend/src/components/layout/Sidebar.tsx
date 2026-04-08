@@ -83,7 +83,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             />
           </div>
           <h1>الحرس الوطني</h1>
-          <p>نضام ادارة حوادث المرور - محمد المولهي</p>
+          <p>نظام ادارة حوادث المرور - محمد المولهي</p>
         </div>
 
         <nav className="sidebar-nav">

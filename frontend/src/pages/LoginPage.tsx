@@ -47,7 +47,7 @@ export default function LoginPage() {
             <div className="login-brand-logo">
               <img src={logo} alt="الحرس الوطني" />
             </div>
-            <h2>نضام ادارة حوادث المرور</h2>
+            <h2>نظام ادارة حوادث المرور</h2>
             <p className="login-brand-sub">محمد المولهي</p>
             <div className="login-brand-divider" />
             <p className="login-brand-desc">الحرس الوطني التونسي</p>
@@ -63,7 +63,7 @@ export default function LoginPage() {
             {/* Mobile header */}
             <div className="login-mobile-header">
               <img src={logo} alt="الحرس الوطني" className="login-mobile-logo" />
-              <h1>نضام ادارة حوادث المرور</h1>
+              <h1>نظام ادارة حوادث المرور</h1>
               <p className="login-mobile-sub">محمد المولهي — الحرس الوطني</p>
             </div>
 
