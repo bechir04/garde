@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Car, BarChart3, Upload, Lightbulb, LogOut,
   Users, ClipboardList, X, Map, ChevronDown, BarChart2, Settings,
 } from 'lucide-react';
-import logo from '../../assets/garde_national-removebg-preview.png';
+import logo from '../../assets/667191247_823712910774173_5046685383098711861_n-removebg-preview.png';
 
 const mainNav = [
   { to: '/', label: 'لوحة القيادة', icon: LayoutDashboard, exact: true },
