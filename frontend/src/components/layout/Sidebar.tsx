@@ -79,7 +79,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <img
               src={logo}
               alt="الحرس الوطني"
-              style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
+              style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
             />
           </div>
           <h1>الحرس الوطني</h1>
