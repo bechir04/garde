@@ -53,7 +53,7 @@ export default function LoginPage() {
             <p className="login-brand-desc">رئيس فرقة حرس المرور</p>
           </div>
           <div className="login-brand-footer">
-           {new Date().getFullYear()} رئيس فرقة حرس المرور
+           {new Date().getFullYear()}الحرس الوطني
           </div>
         </div>
 
