@@ -45,15 +45,15 @@ export default function LoginPage() {
         <div className="login-brand-panel">
           <div className="login-brand-content">
             <div className="login-brand-logo">
-              <img src={logo} alt="الحرس الوطني" />
+              <img src={logo} alt="رئيس فرقة حرس المرور" />
             </div>
             <h2>نظام ادارة حوادث المرور</h2>
             <p className="login-brand-sub">محمد المولهي</p>
             <div className="login-brand-divider" />
-            <p className="login-brand-desc">الحرس الوطني التونسي</p>
+            <p className="login-brand-desc">رئيس فرقة حرس المرور</p>
           </div>
           <div className="login-brand-footer">
-            © {new Date().getFullYear()} جميع الحقوق محفوظة
+           {new Date().getFullYear()} رئيس فرقة حرس المرور
           </div>
         </div>
 
@@ -62,9 +62,9 @@ export default function LoginPage() {
           <div className="login-form-inner">
             {/* Mobile header */}
             <div className="login-mobile-header">
-              <img src={logo} alt="الحرس الوطني" className="login-mobile-logo" />
+              <img src={logo} alt="رئيس فرقة حرس المرور" className="login-mobile-logo" />
               <h1>نظام ادارة حوادث المرور</h1>
-              <p className="login-mobile-sub">محمد المولهي — الحرس الوطني</p>
+              <p className="login-mobile-sub">محمد المولهي — رئيس فرقة حرس المرور</p>
             </div>
 
             {/* Desktop header */}

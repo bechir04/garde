@@ -10,7 +10,7 @@ export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
     <header className="mobile-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <img src={logo} alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))' }} />
-        <span style={{ fontWeight: 700, fontSize: 16 }}>الحرس الوطني</span>
+        <span style={{ fontWeight: 700, fontSize: 16 }}>رئيس فرقة حرس المرور</span>
       </div>
       <button 
         className="mobile-nav-toggle" 

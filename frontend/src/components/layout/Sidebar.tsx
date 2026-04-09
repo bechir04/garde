@@ -78,11 +78,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
             <img
               src={logo}
-              alt="الحرس الوطني"
+              alt="رئيس فرقة حرس المرور"
               style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
             />
           </div>
-          <h1>الحرس الوطني</h1>
+          <h1>رئيس فرقة حرس المرور</h1>
           <p>نظام ادارة حوادث المرور - محمد المولهي</p>
         </div>
 
