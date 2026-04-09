@@ -330,19 +330,19 @@ export default function InsightsPage() {
             {[
               { label: 'الحوادث', key: 'accidents', icon: <AlertTriangle size={20} />, cls: 'danger' },
               { label: 'الوفيات', key: 'deaths', icon: <Shield size={20} />, cls: 'danger' },
-              { label: 'معدل القتلى', key: 'lethalityRate', icon: <Target size={20} />, cls: 'primary' },
+              { label: 'الجرحى', key: 'injuries', icon: <Target size={20} />, cls: 'warning' },
             ].map(({ label, key, icon, cls }) => {
               const m = d.comparison[key];
               return (
                 <div key={key} className="kpi-card">
                   <div className={`kpi-icon ${cls}`}>{icon}</div>
                   <div style={{ flex: 1 }}>
-                    <div className="kpi-value" style={{ fontSize: 22 }}>{typeof m.current === 'number' && key === 'lethalityRate' ? m.current.toFixed(2) : m.current.toLocaleString('ar-TN')}</div>
+                    <div className="kpi-value" style={{ fontSize: 22 }}>{m.current.toLocaleString('ar-TN')}</div>
                     <div className="kpi-label">{label}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                      <ChangeTag change={m.change} diff={key !== 'lethalityRate' ? m.current - m.previous : null} />
+                      <ChangeTag change={m.change} diff={m.current - m.previous} />
                       <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                        vs {typeof m.previous === 'number' && key === 'lethalityRate' ? m.previous.toFixed(2) : m.previous.toLocaleString('ar-TN')}
+                        vs {m.previous.toLocaleString('ar-TN')}
                       </span>
                     </div>
                   </div>

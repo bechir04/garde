@@ -261,20 +261,14 @@ export class AnalyticsService {
     let periodStart: Date, periodEnd: Date, prevStart: Date, prevEnd: Date;
 
     if (filters.dateFrom && filters.dateTo) {
-      // Round to start of month for dateFrom
-      const fromParts = filters.dateFrom.split('-');
-      periodStart = new Date(parseInt(fromParts[0]), parseInt(fromParts[1]) - 1, 1);
-      // Round to end of month for dateTo
-      const toParts = filters.dateTo.split('-');
-      periodEnd = new Date(parseInt(toParts[0]), parseInt(toParts[1]), 0, 23, 59, 59);
-      // Auto-swap if dates are reversed
-      if (periodStart > periodEnd) {
-        [periodStart, periodEnd] = [periodEnd, periodStart];
-      }
-      // Previous period: same duration immediately before the selected period
-      const durationMs = periodEnd.getTime() - periodStart.getTime();
-      prevEnd = new Date(periodStart.getTime() - 1);
-      prevStart = new Date(prevEnd.getTime() - durationMs);
+      // Current period  = full month of dateTo
+      const [toY, toM] = filters.dateTo.split('-').map(Number);
+      periodStart = new Date(Date.UTC(toY, toM - 1, 1));
+      periodEnd   = new Date(Date.UTC(toY, toM,     0, 23, 59, 59, 999));
+      // Previous period = full month of dateFrom
+      const [frY, frM] = filters.dateFrom.split('-').map(Number);
+      prevStart = new Date(Date.UTC(frY, frM - 1, 1));
+      prevEnd   = new Date(Date.UTC(frY, frM,     0, 23, 59, 59, 999));
     } else {
       periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
       periodEnd = now;
@@ -319,11 +313,11 @@ export class AnalyticsService {
     const [currentPeriod, prevPeriod, allAccidents] = await Promise.all([
       this.prisma.accident.findMany({
         where: { ...baseWhere, accidentDate: { gte: periodStart, lte: periodEnd } },
-        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, vehicleBrand1Id: true, vehicleBrand2Id: true, route: true },
+        select: { governorateId: true, causeId: true, accidentTime: true, accidentDate: true, deathsCount: true, injuriesCount: true, vehicleBrand1Id: true, vehicleBrand2Id: true, route: true },
       }),
       this.prisma.accident.findMany({
         where: { ...baseWhere, accidentDate: { gte: prevStart, lte: prevEnd } },
-        select: { governorateId: true, causeId: true, deathsCount: true },
+        select: { governorateId: true, causeId: true, deathsCount: true, injuriesCount: true },
       }),
       this.prisma.accident.findMany({
         where: baseWhere,
@@ -336,14 +330,14 @@ export class AnalyticsService {
     const prevAcc = prevPeriod.length;
     const currDeaths = currentPeriod.reduce((s, a) => s + a.deathsCount, 0);
     const prevDeaths = prevPeriod.reduce((s, a) => s + a.deathsCount, 0);
+    const currInjuries = currentPeriod.reduce((s, a) => s + (a.injuriesCount || 0), 0);
+    const prevInjuries = prevPeriod.reduce((s, a) => s + (a.injuriesCount || 0), 0);
     const pct = (cur: number, prev: number) => prev === 0 ? null : Math.round(((cur - prev) / prev) * 100);
-    const currLeth = currAcc > 0 ? +(currDeaths / currAcc).toFixed(3) : 0;
-    const prevLeth = prevAcc > 0 ? +(prevDeaths / prevAcc).toFixed(3) : 0;
 
     const comparison = {
-      accidents:     { current: currAcc,      previous: prevAcc,      change: pct(currAcc, prevAcc) },
-      deaths:        { current: currDeaths,   previous: prevDeaths,   change: pct(currDeaths, prevDeaths) },
-      lethalityRate: { current: currLeth,     previous: prevLeth,     change: pct(Math.round(currLeth * 1000), Math.round(prevLeth * 1000)) },
+      accidents: { current: currAcc,      previous: prevAcc,      change: pct(currAcc, prevAcc) },
+      deaths:    { current: currDeaths,   previous: prevDeaths,   change: pct(currDeaths, prevDeaths) },
+      injuries:  { current: currInjuries, previous: prevInjuries, change: pct(currInjuries, prevInjuries) },
     };
 
     // 2. Anomaly detection per governorate
@@ -550,7 +544,7 @@ export class AnalyticsService {
       recommendations.push({ priority: 7, type: 'medium', title: 'توقعات الشهر القادم', detail: forecast.warning });
 
     return {
-      period: { start: periodStart.toISOString().split('T')[0], end: periodEnd.toISOString().split('T')[0], label: filters.dateFrom ? 'الفترة المحددة مقابل الفترة السابقة' : 'الشهر الحالي مقابل الشهر الماضي' },
+      period: { start: periodStart.toISOString().split('T')[0], end: periodEnd.toISOString().split('T')[0], prevStart: prevStart.toISOString().split('T')[0], prevEnd: prevEnd.toISOString().split('T')[0], label: filters.dateFrom ? 'الفترة المحددة مقابل الفترة السابقة' : 'الشهر الحالي مقابل الشهر الماضي' },
       comparison,
       anomalies: anomalies.slice(0, 5),
       timeSlotAnalysis,

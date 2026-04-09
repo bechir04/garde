@@ -315,15 +315,16 @@ export default function StatisticsPage() {
             <h3 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               <BarChart3 size={18} color="var(--primary)" /> مقارنة بين الفترتين
             </h3>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              {comparison.period?.start} ← {comparison.period?.end}
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+              <span>الحالية: {comparison.period?.start} ← {comparison.period?.end}</span>
+              <span>السابقة: {comparison.period?.prevStart} ← {comparison.period?.prevEnd}</span>
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
             {[
               { label: 'الحوادث', key: 'accidents', icon: '🚗' },
               { label: 'الوفيات', key: 'deaths', icon: '💀' },
-              { label: 'معدل القتلى', key: 'lethalityRate', icon: '📊' },
+              { label: 'الجرحى', key: 'injuries', icon: '🚑' },
             ].map(({ label, key, icon }) => {
               const m = comparison.comparison?.[key];
               if (!m) return null;
