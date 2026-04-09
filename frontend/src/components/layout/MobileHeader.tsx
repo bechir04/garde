@@ -1,5 +1,5 @@
 import { Menu } from 'lucide-react';
-import logo from '../../assets/garde_national-removebg-preview.png';
+import logo from '../../assets/667191247_823712910774173_5046685383098711861_n-removebg-preview.png';
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
