@@ -20,14 +20,18 @@ const TrendIcon = ({ change }: { change: number | null }) => {
   return <Minus size={16} color="var(--text-secondary)" />;
 };
 
-const ChangeTag = ({ change }: { change: number | null }) => {
+const ChangeTag = ({ change, diff }: { change: number | null; diff?: number | null }) => {
   if (change === null) return <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>لا مقارنة</span>;
   const color = change > 0 ? 'var(--danger)' : change < 0 ? 'var(--success)' : 'var(--text-secondary)';
   const sign = change > 0 ? '+' : '';
+  const diffSign = diff != null && diff > 0 ? '+' : '';
   return (
     <span style={{ fontSize: 12, fontWeight: 700, color, display: 'flex', alignItems: 'center', gap: 4 }}>
       <TrendIcon change={change} />
       {sign}{change}%
+      {diff != null && (
+        <span style={{ fontWeight: 400, opacity: 0.85 }}>({diffSign}{diff})</span>
+      )}
     </span>
   );
 };
@@ -336,7 +340,7 @@ export default function InsightsPage() {
                     <div className="kpi-value" style={{ fontSize: 22 }}>{typeof m.current === 'number' && key === 'lethalityRate' ? m.current.toFixed(2) : m.current.toLocaleString('ar-TN')}</div>
                     <div className="kpi-label">{label}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                      <ChangeTag change={m.change} />
+                      <ChangeTag change={m.change} diff={key !== 'lethalityRate' ? m.current - m.previous : null} />
                       <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                         vs {typeof m.previous === 'number' && key === 'lethalityRate' ? m.previous.toFixed(2) : m.previous.toLocaleString('ar-TN')}
                       </span>

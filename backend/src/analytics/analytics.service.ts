@@ -271,9 +271,10 @@ export class AnalyticsService {
       if (periodStart > periodEnd) {
         [periodStart, periodEnd] = [periodEnd, periodStart];
       }
-      // Previous period: same months but previous year
-      prevEnd = new Date(periodEnd.getFullYear() - 1, periodEnd.getMonth(), periodEnd.getDate(), 23, 59, 59);
-      prevStart = new Date(periodStart.getFullYear() - 1, periodStart.getMonth(), 1);
+      // Previous period: same duration immediately before the selected period
+      const durationMs = periodEnd.getTime() - periodStart.getTime();
+      prevEnd = new Date(periodStart.getTime() - 1);
+      prevStart = new Date(prevEnd.getTime() - durationMs);
     } else {
       periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
       periodEnd = now;
@@ -549,7 +550,7 @@ export class AnalyticsService {
       recommendations.push({ priority: 7, type: 'medium', title: 'توقعات الشهر القادم', detail: forecast.warning });
 
     return {
-      period: { start: periodStart.toISOString().split('T')[0], end: periodEnd.toISOString().split('T')[0], label: filters.dateFrom ? 'الفترة المحددة' : 'الشهر الحالي مقابل الشهر الماضي' },
+      period: { start: periodStart.toISOString().split('T')[0], end: periodEnd.toISOString().split('T')[0], label: filters.dateFrom ? 'الفترة المحددة مقابل الفترة السابقة' : 'الشهر الحالي مقابل الشهر الماضي' },
       comparison,
       anomalies: anomalies.slice(0, 5),
       timeSlotAnalysis,
