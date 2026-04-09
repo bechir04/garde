@@ -14,4 +14,15 @@ export class VehicleBrandsService {
       data: { nameAr: nameAr.trim(), nameEn: nameAr.trim() },
     });
   }
+
+  async update(id: number, nameAr: string) {
+    return this.prisma.vehicleBrand.update({
+      where: { id },
+      data: { nameAr: nameAr.trim(), nameEn: nameAr.trim() },
+    });
+  }
+
+  async delete(id: number) {
+    return this.prisma.vehicleBrand.delete({ where: { id } });
+  }
 }

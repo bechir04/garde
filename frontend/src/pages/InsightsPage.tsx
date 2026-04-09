@@ -54,7 +54,7 @@ function getHeatColor(count: number, max: number): string {
   return heatmapColors[idx];
 }
 
-const severityGaugeColors = ['#27ae60', '#f39c12', '#e67e22', '#e74c3c'];
+const severityGaugeColors = ['#27ae60', '#f3ec12ff', '#e67e22', '#e74c3c'];
 const severityGaugeLabels = ['منخفض', 'متوسط', 'مرتفع', 'حرج'];
 
 export default function InsightsPage() {

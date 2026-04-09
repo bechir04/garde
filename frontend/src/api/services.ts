@@ -14,6 +14,8 @@ export const createCause = (nameAr: string) => client.post('/causes', { nameAr }
 
 export const getBrands = () => client.get('/vehicle-brands').then((r) => r.data);
 export const createBrand = (nameAr: string) => client.post('/vehicle-brands', { nameAr }).then((r) => r.data);
+export const updateBrand = (id: number, nameAr: string) => client.put(`/vehicle-brands/${id}`, { nameAr }).then((r) => r.data);
+export const deleteBrand = (id: number) => client.delete(`/vehicle-brands/${id}`).then((r) => r.data);
 
 // Accidents — normalize: backend returns { data, meta: { total } }, pages use { data, total }
 export const getAccidents = (params: Record<string, unknown>) =>

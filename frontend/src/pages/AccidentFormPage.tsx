@@ -1,6 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, createCause, createBrand } from '../api/services';
+import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, createCause } from '../api/services';
 import { Save, ArrowRight } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
@@ -58,9 +58,7 @@ export default function AccidentFormPage() {
   const handleChange = (field: string, value: string) => {
     setForm((prev) => {
       const updated = { ...prev, [field]: value };
-      if (field === 'governorateId') {
-        updated.cityId = '';
-      }
+      if (field === 'governorateId') updated.cityId = '';
       return updated;
     });
   };
@@ -193,31 +191,21 @@ export default function AccidentFormPage() {
             <div className="form-group">
               <label className="form-label">ماركة السيارة 1</label>
               <SearchableSelect
-                options={brands.map((b: any) => ({ value: String(b.id), label: `${b.nameAr} (${b.nameEn})` }))}
+                options={brands.map((b: any) => ({ value: String(b.id), label: b.nameAr }))}
                 value={form.vehicleBrand1Id}
                 onChange={(v) => handleChange('vehicleBrand1Id', v)}
-                placeholder="اختر أو اكتب ماركة جديدة"
-                onCreate={async (text) => {
-                  const newBrand = await createBrand(text);
-                  const updated = await getBrands();
-                  setBrands(updated);
-                  return newBrand;
-                }}
+                placeholder="اختر الماركة"
+                emptyLabel="— اختر الماركة —"
               />
             </div>
             <div className="form-group">
               <label className="form-label">ماركة السيارة 2</label>
               <SearchableSelect
-                options={brands.map((b: any) => ({ value: String(b.id), label: `${b.nameAr} (${b.nameEn})` }))}
+                options={brands.map((b: any) => ({ value: String(b.id), label: b.nameAr }))}
                 value={form.vehicleBrand2Id}
                 onChange={(v) => handleChange('vehicleBrand2Id', v)}
-                placeholder="اختر أو اكتب ماركة جديدة"
-                onCreate={async (text) => {
-                  const newBrand = await createBrand(text);
-                  const updated = await getBrands();
-                  setBrands(updated);
-                  return newBrand;
-                }}
+                placeholder="اختر الماركة"
+                emptyLabel="— اختر الماركة —"
               />
             </div>
           </div>
