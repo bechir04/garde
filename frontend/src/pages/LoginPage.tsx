@@ -45,15 +45,14 @@ export default function LoginPage() {
         <div className="login-brand-panel">
           <div className="login-brand-content">
             <div className="login-brand-logo">
-              <img src={logo} alt="رئيس فرقة حرس المرور" />
+              <img src={logo} alt="رئيس فرقة  الحرس الوطني" />
             </div>
             <h2>نظام ادارة حوادث المرور</h2>
-            <p className="login-brand-sub">محمد المولهي</p>
+            <p className="login-brand-sub">  الحرس الوطني</p>
             <div className="login-brand-divider" />
-            <p className="login-brand-desc">رئيس فرقة حرس المرور</p>
           </div>
           <div className="login-brand-footer">
-           {new Date().getFullYear()}الحرس الوطني
+           رئيس فرقة حرس المرور -  محمد المولهي
           </div>
         </div>
 
@@ -62,9 +61,9 @@ export default function LoginPage() {
           <div className="login-form-inner">
             {/* Mobile header */}
             <div className="login-mobile-header">
-              <img src={logo} alt="رئيس فرقة حرس المرور" className="login-mobile-logo" />
+              <img src={logo} alt="رئيس فرقة  الحرس الوطني" className="login-mobile-logo" />
               <h1>نظام ادارة حوادث المرور</h1>
-              <p className="login-mobile-sub">محمد المولهي — رئيس فرقة حرس المرور</p>
+              <p className="login-mobile-sub">  الحرس الوطني — رئيس فرقة  الحرس الوطني</p>
             </div>
 
             {/* Desktop header */}

@@ -146,7 +146,7 @@ export default function DashboardPage() {
       getAnalyticsSummary(yearFilter),
       getAnalyticsByCause(yearFilter),
       getAnalyticsByMonth(yearFilter),
-      getAccidents({ page: 1, limit: 5, sortBy: 'createdAt', sortOrder: 'desc', ...yearFilter }),
+      getAccidents({ page: 1, limit: 5, sortBy: 'accidentDate', sortOrder: 'desc', ...yearFilter }),
     ]).then(([s, c, t, a]) => {
       setSummary(s);
       setByCause(c.slice(0, 6));

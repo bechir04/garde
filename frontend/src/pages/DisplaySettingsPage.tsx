@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDisplaySettings, STATS_SECTIONS, INSIGHTS_SECTIONS } from '../contexts/DisplaySettingsContext';
-import { Eye, EyeOff, RotateCcw, Settings, BarChart3, Lightbulb, Car, Plus, Pencil, Trash2, Check, X, Search } from 'lucide-react';
+import { Eye, EyeOff, RotateCcw, Settings, BarChart3, Lightbulb, Car, Plus, Pencil, Trash2, Check, X, Search, GripVertical } from 'lucide-react';
 import { getBrands, createBrand, updateBrand, deleteBrand } from '../api/services';
 import { useToast } from '../contexts/ToastContext';
 
@@ -236,8 +236,10 @@ function BrandsManager() {
 }
 
 export default function DisplaySettingsPage() {
-  const { settings, toggleStats, toggleInsights, resetAll } = useDisplaySettings();
+  const { settings, statsOrder, toggleStats, toggleInsights, reorderStats, resetAll } = useDisplaySettings();
   const [activeTab, setActiveTab] = useState<'stats' | 'insights' | 'brands'>('stats');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   return (
     <div>
@@ -292,25 +294,46 @@ export default function DisplaySettingsPage() {
               <Settings size={17} /> {activeTab === 'stats' ? 'أقسام صفحة الإحصائيات' : 'أقسام صفحة التقييم الشامل'}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {(activeTab === 'stats' ? STATS_SECTIONS : INSIGHTS_SECTIONS).map((section) => {
+              {(activeTab === 'stats' ? statsOrder : INSIGHTS_SECTIONS).map((section, idx) => {
                 const isVisible = activeTab === 'stats'
                   ? settings.stats[section as typeof STATS_SECTIONS[number]]
                   : settings.insights[section as typeof INSIGHTS_SECTIONS[number]];
                 const label = activeTab === 'stats' ? statsLabels[section] : insightsLabels[section];
+                const isDragging = activeTab === 'stats' && dragIndex === idx;
+                const isDropTarget = activeTab === 'stats' && dropIndex === idx && dragIndex !== idx;
                 return (
                   <div
                     key={section}
+                    draggable={activeTab === 'stats'}
+                    onDragStart={() => { setDragIndex(idx); setDropIndex(idx); }}
+                    onDragOver={(e) => { e.preventDefault(); setDropIndex(idx); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragIndex === null || dragIndex === idx) return;
+                      const newOrder = [...statsOrder];
+                      const [moved] = newOrder.splice(dragIndex, 1);
+                      newOrder.splice(idx, 0, moved);
+                      reorderStats(newOrder);
+                      setDragIndex(null);
+                      setDropIndex(null);
+                    }}
+                    onDragEnd={() => { setDragIndex(null); setDropIndex(null); }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
                       padding: '12px 16px', borderRadius: 8,
                       background: isVisible ? '#f8f9fb' : '#f0f2f5',
-                      border: `1px solid ${isVisible ? 'var(--border)' : 'transparent'}`,
-                      opacity: isVisible ? 1 : 0.6,
-                      transition: 'all 0.2s',
+                      border: `1px solid ${isDropTarget ? 'var(--primary)' : isVisible ? 'var(--border)' : 'transparent'}`,
+                      opacity: isDragging ? 0.4 : isVisible ? 1 : 0.6,
+                      transition: 'all 0.15s',
                       flexWrap: 'wrap',
+                      cursor: activeTab === 'stats' ? 'grab' : 'default',
+                      boxShadow: isDropTarget ? '0 0 0 2px var(--primary)22' : undefined,
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+                      {activeTab === 'stats' && (
+                        <GripVertical size={16} style={{ color: 'var(--text-secondary)', flexShrink: 0, cursor: 'grab' }} />
+                      )}
                       <div style={{
                         width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                         background: isVisible ? 'var(--primary)' : '#dfe6e9',

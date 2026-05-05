@@ -17,11 +17,14 @@ const DEFAULT_SETTINGS: DisplaySettings = {
 };
 
 const STORAGE_KEY = 'display_settings';
+const ORDER_KEY = 'stats_order';
 
 interface DisplayContextValue {
   settings: DisplaySettings;
+  statsOrder: StatsSection[];
   toggleStats: (section: StatsSection) => void;
   toggleInsights: (section: InsightsSection) => void;
+  reorderStats: (order: StatsSection[]) => void;
   resetAll: () => void;
 }
 
@@ -37,9 +40,26 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [statsOrder, setStatsOrder] = useState<StatsSection[]>(() => {
+    try {
+      const stored = localStorage.getItem(ORDER_KEY);
+      if (stored) {
+        const parsed: StatsSection[] = JSON.parse(stored);
+        // ensure all sections are present (handles new sections added later)
+        const missing = STATS_SECTIONS.filter(s => !parsed.includes(s));
+        return [...parsed, ...missing];
+      }
+    } catch { /* ignore */ }
+    return [...STATS_SECTIONS];
+  });
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(statsOrder));
+  }, [statsOrder]);
 
   const toggleStats = (section: StatsSection) =>
     setSettings(prev => ({ ...prev, stats: { ...prev.stats, [section]: !prev.stats[section] } }));
@@ -47,10 +67,12 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   const toggleInsights = (section: InsightsSection) =>
     setSettings(prev => ({ ...prev, insights: { ...prev.insights, [section]: !prev.insights[section] } }));
 
-  const resetAll = () => setSettings(DEFAULT_SETTINGS);
+  const reorderStats = (order: StatsSection[]) => setStatsOrder(order);
+
+  const resetAll = () => { setSettings(DEFAULT_SETTINGS); setStatsOrder([...STATS_SECTIONS]); };
 
   return (
-    <DisplayContext.Provider value={{ settings, toggleStats, toggleInsights, resetAll }}>
+    <DisplayContext.Provider value={{ settings, statsOrder, toggleStats, toggleInsights, reorderStats, resetAll }}>
       {children}
     </DisplayContext.Provider>
   );
@@ -61,3 +83,4 @@ export function useDisplaySettings() {
   if (!ctx) throw new Error('useDisplaySettings must be used within DisplayProvider');
   return ctx;
 }
+

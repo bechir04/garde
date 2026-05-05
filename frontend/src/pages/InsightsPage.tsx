@@ -54,8 +54,6 @@ function getHeatColor(count: number, max: number): string {
   return heatmapColors[idx];
 }
 
-const severityGaugeColors = ['#27ae60', '#f3ec12ff', '#e67e22', '#e74c3c'];
-const severityGaugeLabels = ['منخفض', 'متوسط', 'مرتفع', 'حرج'];
 
 export default function InsightsPage() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -181,9 +179,6 @@ export default function InsightsPage() {
   const d = data;
   const hasCritical = d?.anomalies?.some((a: any) => a.severity === 'critical');
   const trendUp = d?.comparison?.accidents?.change > 20;
-  const gaugeIndex = d?.severityIndex || 0;
-  const gaugeLevel = d?.severityLevel || 'منخفض';
-  const gaugeColorIdx = gaugeIndex >= 70 ? 3 : gaugeIndex >= 50 ? 2 : gaugeIndex >= 30 ? 1 : 0;
 
   const forecastData = d?.forecast;
   const heatmapData = d?.heatmap || [];
@@ -284,47 +279,9 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* ── Severity Gauge + KPI Cards ── */}
-      {(settings.insights.gauge || settings.insights.kpi) && (
-      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '280px 1fr', gap: 20, marginBottom: 24 }}>
-        {/* Severity Gauge */}
-        {settings.insights.gauge && (
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: 'var(--text-secondary)' }}>مؤشر الخطورة</div>
-          <div style={{ position: 'relative', width: 140, height: 80, overflow: 'hidden' }}>
-            <div style={{
-              position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-              width: 140, height: 140, borderRadius: '50%',
-              background: `conic-gradient(from 180deg at 50% 100%,
-                ${severityGaugeColors[0]} 0deg 45deg,
-                ${severityGaugeColors[1]} 45deg 90deg,
-                ${severityGaugeColors[2]} 90deg 135deg,
-                ${severityGaugeColors[3]} 135deg 180deg,
-                transparent 180deg
-              )`,
-            }} />
-            <div style={{
-              position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-              width: 100, height: 100, borderRadius: '50%', background: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-            }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: severityGaugeColors[gaugeColorIdx] }}>{gaugeIndex}</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: severityGaugeColors[gaugeColorIdx] }}>{gaugeLevel}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 12, fontSize: 10 }}>
-            {severityGaugeLabels.map((label, i) => (
-              <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 3, color: gaugeColorIdx === i ? severityGaugeColors[i] : 'var(--text-secondary)', fontWeight: gaugeColorIdx === i ? 700 : 400 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 2, background: severityGaugeColors[i] }} />
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        )}
-
-        {/* KPI Cards */}
+      {/* ── KPI Cards ── */}
+      {settings.insights.kpi && (
+      <div style={{ marginBottom: 24 }}>
         {settings.insights.kpi && d?.comparison && (
           <div className="kpi-grid" style={{ marginBottom: 0 }}>
             {[
