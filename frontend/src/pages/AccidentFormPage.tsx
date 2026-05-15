@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, createCause } from '../api/services';
-import { Save, ArrowRight } from 'lucide-react';
+import { Save, ArrowRight, Plus, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import { useToast } from '../contexts/ToastContext';
@@ -18,6 +18,7 @@ export default function AccidentFormPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showBrand2, setShowBrand2] = useState(false);
 
   const [form, setForm] = useState({
     accidentDate: '', accidentTime: '', governorateId: '',
@@ -49,6 +50,7 @@ export default function AccidentFormPage() {
               injuriesCount: String(a.injuriesCount || 0),
               description: a.description || '',
             });
+            if (a.vehicleBrand2Id) setShowBrand2(true);
           });
         }
       })
@@ -170,7 +172,7 @@ export default function AccidentFormPage() {
             🚗 تفاصيل الحادث
           </h3>
 
-          <div className="form-row-3">
+          <div className="form-row">
             <div className="form-group">
               <label className="form-label">سبب الحادث *</label>
               <SearchableSelect
@@ -198,8 +200,20 @@ export default function AccidentFormPage() {
                 emptyLabel="— اختر الماركة —"
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">ماركة السيارة 2</label>
+          </div>
+
+          {showBrand2 ? (
+            <div className="form-group" style={{ maxWidth: '50%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>ماركة السيارة 2</label>
+                <button
+                  type="button"
+                  onClick={() => { setShowBrand2(false); handleChange('vehicleBrand2Id', ''); }}
+                  style={{ border: 'none', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
+                >
+                  <X size={13} /> إزالة
+                </button>
+              </div>
               <SearchableSelect
                 options={brands.map((b: any) => ({ value: String(b.id), label: b.nameAr }))}
                 value={form.vehicleBrand2Id}
@@ -208,7 +222,15 @@ export default function AccidentFormPage() {
                 emptyLabel="— اختر الماركة —"
               />
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowBrand2(true)}
+              style={{ border: 'none', background: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, marginBottom: 8, padding: 0 }}
+            >
+              <Plus size={14} /> إضافة ماركة السيارة 2
+            </button>
+          )}
 
           <div className="form-row">
             <div className="form-group">
