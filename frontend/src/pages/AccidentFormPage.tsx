@@ -1,9 +1,8 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, createCause } from '../api/services';
+import { getAccident, createAccident, updateAccident, getGovernorates, getCauses, getBrands, getCities, createCause } from '../api/services';
 import { Save, ArrowRight, Plus, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
-import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import { useToast } from '../contexts/ToastContext';
 
 export default function AccidentFormPage() {
@@ -15,6 +14,7 @@ export default function AccidentFormPage() {
   const [governorates, setGovernorates] = useState<any[]>([]);
   const [causes, setCauses] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -27,31 +27,31 @@ export default function AccidentFormPage() {
     deathsCount: '0', injuriesCount: '0', description: '',
   } as Record<string, string>);
 
-  const sidiBouzidId = '18';
-  const showMunicipality = form.governorateId === sidiBouzidId;
-
   useEffect(() => {
     Promise.all([getGovernorates(), getCauses(), getBrands()])
       .then(([g, c, b]) => { setGovernorates(g); setCauses(c); setBrands(b); })
-      .then(() => {
+      .then(async () => {
         if (isEdit && id) {
-          return getAccident(id).then((a: any) => {
-            setForm({
-              accidentDate: a.accidentDate?.split('T')[0] || '',
-              accidentTime: a.accidentTime || '',
-              governorateId: String(a.governorateId || ''),
-              cityId: a.cityId ? String(a.cityId) : '',
-              route: a.route || '',
-              kilometrePoint: a.kilometrePoint != null ? String(a.kilometrePoint) : '',
-              causeId: String(a.causeId || ''),
-              vehicleBrand1Id: a.vehicleBrand1Id ? String(a.vehicleBrand1Id) : '',
-              vehicleBrand2Id: a.vehicleBrand2Id ? String(a.vehicleBrand2Id) : '',
-              deathsCount: String(a.deathsCount || 0),
-              injuriesCount: String(a.injuriesCount || 0),
-              description: a.description || '',
-            });
-            if (a.vehicleBrand2Id) setShowBrand2(true);
+          const a = await getAccident(id);
+          setForm({
+            accidentDate: a.accidentDate?.split('T')[0] || '',
+            accidentTime: a.accidentTime || '',
+            governorateId: String(a.governorateId || ''),
+            cityId: a.cityId ? String(a.cityId) : '',
+            route: a.route || '',
+            kilometrePoint: a.kilometrePoint != null ? String(a.kilometrePoint) : '',
+            causeId: String(a.causeId || ''),
+            vehicleBrand1Id: a.vehicleBrand1Id ? String(a.vehicleBrand1Id) : '',
+            vehicleBrand2Id: a.vehicleBrand2Id ? String(a.vehicleBrand2Id) : '',
+            deathsCount: String(a.deathsCount || 0),
+            injuriesCount: String(a.injuriesCount || 0),
+            description: a.description || '',
           });
+          if (a.vehicleBrand2Id) setShowBrand2(true);
+          if (a.governorateId) {
+            const c = await getCities(a.governorateId);
+            setCities(c);
+          }
         }
       })
       .finally(() => setLoading(false));
@@ -60,7 +60,14 @@ export default function AccidentFormPage() {
   const handleChange = (field: string, value: string) => {
     setForm((prev) => {
       const updated = { ...prev, [field]: value };
-      if (field === 'governorateId') updated.cityId = '';
+      if (field === 'governorateId') {
+        updated.cityId = '';
+        if (value) {
+          getCities(parseInt(value)).then(setCities).catch(() => setCities([]));
+        } else {
+          setCities([]);
+        }
+      }
       return updated;
     });
   };
@@ -151,11 +158,11 @@ export default function AccidentFormPage() {
             </div>
           </div>
 
-          {showMunicipality && (
+          {form.governorateId && cities.length > 0 && (
             <div className="form-group">
               <label className="form-label">المعتمدية</label>
               <SearchableSelect
-                options={SIDI_BOUZID_MUNICIPALITIES.map((m) => ({ value: String(m.id), label: m.nameAr }))}
+                options={cities.map((c: any) => ({ value: String(c.id), label: c.nameAr }))}
                 value={form.cityId}
                 onChange={(v) => handleChange('cityId', v)}
                 placeholder="اختر المعتمدية"
