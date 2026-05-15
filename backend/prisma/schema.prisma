@@ -83,7 +83,7 @@ model VehicleBrand {
 model Accident {
   id              String        @id @default(uuid())
   accidentDate    DateTime      @map("accident_date") @db.Date
-  accidentTime    String        @map("accident_time") @db.VarChar(5)
+  accidentTime    String?       @map("accident_time") @db.VarChar(5)
   governorateId   Int           @map("governorate_id")
   governorate     Governorate   @relation(fields: [governorateId], references: [id])
   cityId          Int?          @map("city_id")

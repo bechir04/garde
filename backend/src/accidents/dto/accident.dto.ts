@@ -5,9 +5,10 @@ export class CreateAccidentDto {
   @IsNotEmpty()
   accidentDate: string;
 
+  @IsOptional()
   @IsString()
   @Matches(/^\d{2}:\d{2}$/, { message: 'الوقت يجب أن يكون بصيغة HH:MM' })
-  accidentTime: string;
+  accidentTime?: string;
 
   @IsInt()
   @IsNotEmpty()
