@@ -95,7 +95,14 @@ export default function AccidentFormPage() {
       }
       navigate('/accidents');
     } catch (err: any) {
-      toastError('خطأ في الحفظ', err.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+      const data = err.response?.data;
+      let msg: string;
+      if (data?.message) {
+        msg = Array.isArray(data.message) ? data.message.join(' | ') : String(data.message);
+      } else {
+        msg = err.message || 'حدث خطأ أثناء الحفظ';
+      }
+      toastError('خطأ في الحفظ', msg);
     }
     setSaving(false);
   };
