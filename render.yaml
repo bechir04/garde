@@ -5,7 +5,7 @@ services:
     plan: free # Can be changed to 'starter' for more resources
     region: frankfurt # Preferred for better speed/location
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate
+    buildCommand: npm install && npm run build # "build" runs "prisma generate" first (prebuild)
     startCommand: npx prisma migrate deploy && npx prisma db seed && npm run start:prod
     envVars:
       - key: NODE_VERSION
