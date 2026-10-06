@@ -14,12 +14,15 @@ import type { AnalyticsFilters } from '../api/services';
 import { Filter, Calendar, MapPin, Building2, RotateCcw, TrendingDown, Map, BarChart3, Eye } from 'lucide-react';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
 import { useDisplaySettings } from '../contexts/DisplaySettingsContext';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 
 const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d35400','#16a085','#c0392b','#2c3e50'];
 
 export default function StatisticsPage() {
   const navigate = useNavigate();
   const { settings, statsOrder } = useDisplaySettings();
+  const isPhone = useMediaQuery(PHONE_QUERY);
+  const labelWidth = isPhone ? 96 : 160; // name column of the horizontal bar charts
   const [governorates, setGovernorates] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [byGov, setByGov] = useState<any[]>([]);
@@ -165,11 +168,11 @@ export default function StatisticsPage() {
 
       {showFilters && (
         <div className="card" style={{ marginBottom: 24, background: '#f8f9fb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
               <Filter size={16} /> فلترة البيانات
             </h3>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
                 className={`btn ${quickFilter === 'day' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => handleQuickFilter('day')}
@@ -348,7 +351,7 @@ export default function StatisticsPage() {
                 <BarChart data={byGov} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={160} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="name" type="category" width={labelWidth} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: 'var(--shadow-lg)', direction: 'rtl', fontFamily: 'inherit' }} />
                   <Bar dataKey="count" fill="#1a5276" radius={[4, 0, 0, 4]} name="عدد الحوادث" barSize={22} />
                 </BarChart>
@@ -513,7 +516,7 @@ export default function StatisticsPage() {
               <BarChart data={byCity} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                 <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={160} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" width={labelWidth} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: 'var(--shadow-lg)', direction: 'rtl', fontFamily: 'inherit' }} />
                 <Bar dataKey="count" fill="#27ae60" radius={[4, 0, 0, 4]} name="عدد الحوادث" barSize={22} />
                 <Bar dataKey="deaths" fill="#e74c3c" radius={[4, 0, 0, 4]} name="الوفيات" barSize={22} />

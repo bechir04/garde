@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { Car, Skull, AlertTriangle, Plus, MapPin, Clock, ChevronRight, Calendar, TrendingUp } from 'lucide-react';
 import { getAnalyticsSummary, getAnalyticsByCause, getAnalyticsByMonth, getAccidents } from '../api/services';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 
 const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d35400','#16a085'];
 
@@ -132,6 +133,7 @@ function TodayAccidentsBanner() {
 }
 
 export default function DashboardPage() {
+  const isPhone = useMediaQuery(PHONE_QUERY);
   const [summary, setSummary] = useState<any>(null);
   const [byCause, setByCause] = useState<any[]>([]);
   const [trends, setTrends] = useState<any[]>([]);
@@ -261,6 +263,30 @@ export default function DashboardPage() {
           <h3 className="card-title">آخر الحوادث المسجلة</h3>
           <Link to="/accidents" className="btn btn-outline btn-sm">عرض الكل</Link>
         </div>
+        {isPhone ? (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {recent.map((a: any) => (
+              <Link
+                key={a.id}
+                to={`/accidents/${a.id}`}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 2px', borderBottom: '1px solid var(--border)' }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.route || '—'}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    {new Date(a.accidentDate).toLocaleDateString('ar-TN')} · {a.governorate?.nameAr || '—'}
+                  </div>
+                  <span className="tag" style={{ fontSize: 11, marginTop: 4 }}>{a.cause?.nameAr || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                  <span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>وفيات: {a.deathsCount}</span>
+                  <span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>جرحى: {a.injuriesCount}</span>
+                </div>
+              </Link>
+            ))}
+            {recent.length === 0 && <div className="empty-state">لا توجد بيانات</div>}
+          </div>
+        ) : (
         <div className="table-container">
           <table>
             <thead>
@@ -290,6 +316,7 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

@@ -79,10 +79,10 @@ export default function SearchableSelect({
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative' }}>
+    <div ref={containerRef} style={{ position: 'relative', minWidth: 0 }}>
       <div
         style={{
-          display: 'flex', alignItems: 'center',
+          display: 'flex', alignItems: 'center', minWidth: 0,
           border: `1px solid ${open ? 'var(--primary-light)' : 'var(--border)'}`,
           borderRadius: 'var(--radius-sm)',
           background: '#fff',
@@ -96,7 +96,10 @@ export default function SearchableSelect({
         <input
           ref={inputRef}
           style={{
-            flex: 1, border: 'none', outline: 'none', padding: '9px 14px',
+            // minWidth 0: a text input's default ~20-character width would otherwise
+            // push narrow form columns (tablets) wider than the screen.
+            flex: 1, minWidth: 0, width: '100%', textOverflow: 'ellipsis',
+            border: 'none', outline: 'none', padding: '9px 14px',
             fontSize: 14, fontFamily: 'inherit', background: 'transparent',
             direction: 'rtl', color: 'var(--text-primary)', cursor: 'text',
           }}

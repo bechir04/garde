@@ -5,6 +5,7 @@ import { getAnalyticsByGovernorate, getAnalyticsByCity, getGovernorates } from '
 import type { AnalyticsFilters } from '../api/services';
 import { ArrowRight, Filter, Calendar, MapPin, Building2, RotateCcw, Layers, ChevronDown } from 'lucide-react';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 import tunisiaGeoJSON from '../data/tunisia-governorates.json';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -39,6 +40,10 @@ function getColor(count: number, max: number): string {
 }
 
 
+// Module-level constant: a new array on every render would make MapController
+// re-center the map on each hover, undoing the user's pan/zoom.
+const TUNISIA_CENTER: [number, number] = [34.0, 9.5];
+
 function MapController({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => { map.setView(center, zoom); }, [center, zoom, map]);
@@ -58,6 +63,8 @@ export default function MapPage() {
   const [filters, setFilters] = useState<AnalyticsFilters>({});
   const [selectedMunicipality, setSelectedMunicipality] = useState('');
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 768);
+  const isPhone = useMediaQuery(PHONE_QUERY);
+  const mapZoom = isPhone ? 6 : 7; // whole country visible on narrow screens
 
   const showMunicipalityDropdown = filters.governorateId === '18';
   const maxCount = Math.max(...Object.values(stats).map((s) => s.count), 1);
@@ -167,21 +174,21 @@ export default function MapPage() {
   const legendSteps = [0, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90, 1.0];
 
   return (
-    <div style={{ height: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column' }}>
+    <div className="map-page" style={{ borderRadius: 'var(--radius)', border: '1px solid var(--border)', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#fff', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '12px 16px', background: '#fff', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <button className="btn btn-outline btn-sm" onClick={() => navigate('/statistics')}>
             <ArrowRight size={16} />
           </button>
-          <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>الخريطة التفاعلية</h1>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, whiteSpace: 'nowrap' }}>الخريطة التفاعلية</h1>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
               {totalAccidents.toLocaleString('ar-TN')} حادث · {totalDeaths.toLocaleString('ar-TN')} وفاة · {totalInjuries.toLocaleString('ar-TN')} جريح
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button
             className={`btn ${showMunicipalities ? 'btn-primary' : 'btn-outline'} btn-sm`}
             onClick={() => setShowMunicipalities(!showMunicipalities)}
@@ -257,10 +264,10 @@ export default function MapPage() {
           </div>
         )}
 
-        <MapContainer center={[34.0, 9.5]} zoom={7} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+        <MapContainer center={TUNISIA_CENTER} zoom={mapZoom} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }} zoomControl={false}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <GeoJSON
             key={JSON.stringify(filters)}
@@ -269,7 +276,7 @@ export default function MapPage() {
             onEachFeature={onEachFeature}
             ref={geojsonRef}
           />
-          <MapController center={[34.0, 9.5]} zoom={7} />
+          <MapController center={TUNISIA_CENTER} zoom={mapZoom} />
 
           {showMunicipalities && SIDI_BOUZID_MUNICIPALITIES.map((mun) => {
             const ms = munStats[mun.id] || { count: 0, deaths: 0, injuries: 0 };

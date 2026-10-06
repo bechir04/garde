@@ -3,6 +3,7 @@ import { getAuditLogs } from '../api/services';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 
 const actionLabels: Record<string, { label: string; badge: string }> = {
   CREATE: { label: 'إنشاء', badge: 'badge-success' },
@@ -54,6 +55,7 @@ function formatDetails(details: any): string {
 export default function AuditPage() {
   const { user: me } = useAuth();
   const navigate = useNavigate();
+  const isPhone = useMediaQuery(PHONE_QUERY);
   const [logs, setLogs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -158,6 +160,49 @@ export default function AuditPage() {
       <div className="card">
         {loading ? <div className="spinner" /> : (
           <>
+            {isPhone ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {logs.map((log: any) => {
+                  const action = actionLabels[log.action] || { label: log.action, badge: 'badge-info' };
+                  const dt = new Date(log.createdAt);
+                  const target = log.entityType === 'ACCIDENT' && log.details?.route
+                    ? log.details.route
+                    : log.entityId && log.entityId !== 'system' ? `${log.entityId.slice(0, 8)}…` : null;
+                  return (
+                    <div key={log.id} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '12px 14px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{log.user?.fullName || '—'}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{log.user?.username}</div>
+                        </div>
+                        <span className={`badge ${action.badge}`} style={{ flexShrink: 0 }}>{action.label}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', flexWrap: 'wrap', gap: '2px 10px' }}>
+                        <span>{dt.toLocaleDateString('ar-TN')} · {dt.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{entityLabels[log.entityType] || log.entityType}{target ? `: ${target}` : ''}</span>
+                      </div>
+                      {log.details && Object.keys(log.details).length > 0 && (
+                        <details style={{ fontSize: 12, marginTop: 6 }}>
+                          <summary style={{ color: 'var(--primary-light)', cursor: 'pointer', userSelect: 'none' }}>عرض التفاصيل</summary>
+                          <pre style={{
+                            background: '#f8f9fb', borderRadius: 6, padding: '6px 10px', marginTop: 4, fontSize: 11,
+                            direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap', fontFamily: 'inherit', lineHeight: 1.6,
+                          }}>
+                            {formatDetails(log.details)}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+                  );
+                })}
+                {logs.length === 0 && (
+                  <div className="empty-state">
+                    <ClipboardList size={40} style={{ opacity: 0.3 }} />
+                    <p style={{ marginTop: 12 }}>لا توجد سجلات مطابقة</p>
+                  </div>
+                )}
+              </div>
+            ) : (
             <div className="table-container">
               <table>
                 <thead>
@@ -243,6 +288,7 @@ export default function AuditPage() {
                 </tbody>
               </table>
             </div>
+            )}
 
             {totalPages > 1 && (
               <div className="pagination" style={{ marginTop: 16 }}>

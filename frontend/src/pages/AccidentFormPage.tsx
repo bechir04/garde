@@ -246,7 +246,7 @@ export default function AccidentFormPage() {
           </div>
 
           {showBrand2 ? (
-            <div className="form-group" style={{ maxWidth: '50%' }}>
+            <div className="form-group half-width">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                 <label className="form-label" style={{ marginBottom: 0 }}>ماركة السيارة 2</label>
                 <button

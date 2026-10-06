@@ -108,7 +108,7 @@ function BrandsManager() {
     <div>
       {/* Header row */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center' }}>
-        <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
           <Search size={15} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
           <input
             className="form-input"
@@ -256,7 +256,7 @@ export default function DisplaySettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#f0f2f5', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div className="tab-bar">
         {[
           { key: 'stats' as const,    label: 'الإحصائيات',    icon: <BarChart3 size={14} /> },
           { key: 'insights' as const, label: 'التقييم الشامل', icon: <Lightbulb size={14} /> },

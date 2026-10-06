@@ -4,8 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useDisplaySettings } from '../../contexts/DisplaySettingsContext';
 import {
   LayoutDashboard, Car, BarChart3, Upload, Lightbulb, LogOut,
-  Users, ClipboardList, X, Map, ChevronDown, BarChart2, Settings,
+  Users, ClipboardList, X, Map, ChevronDown, BarChart2, Settings, Download,
 } from 'lucide-react';
+import { useInstallState, requestInstall, canOfferInstall } from '../../pwa/install';
 import logo from '../../assets/667191247_823712910774173_5046685383098711861_n-removebg-preview.png';
 
 const mainNav = [
@@ -37,6 +38,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const { settings } = useDisplaySettings();
+  const install = useInstallState();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
 
@@ -53,34 +55,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (isAnalyticsActive) setAnalyticsOpen(true);
   }, [isAnalyticsActive]);
 
-  const handleNavClick = () => {
-    if (window.innerWidth <= 768) onClose?.();
-  };
+  // Closes the drawer on small screens (also when tapping the link of the current page);
+  // on desktop the sidebar is never "open", so this is a no-op there.
+  const handleNavClick = () => onClose?.();
 
   return (
     <>
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <button
-            className="mobile-nav-toggle"
-            onClick={onClose}
-            style={{ position: 'absolute', left: 10, top: 10, color: 'rgba(255,255,255,0.5)', display: 'none' }}
-            id="sidebar-close-btn"
-          >
+          <button className="mobile-nav-toggle sidebar-close" onClick={onClose} aria-label="إغلاق القائمة">
             <X size={20} />
           </button>
-          <style>{`
-            @media (max-width: 768px) {
-              #sidebar-close-btn { display: flex !important; }
-            }
-          `}</style>
 
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-            <img
-              src={logo}
-              alt="رئيس فرقة حرس المرور"
-              style={{ width: 120, height: 120, objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}
-            />
+          <div className="sidebar-logo">
+            <img src={logo} alt="رئيس فرقة حرس المرور" />
           </div>
           <h1>رئيس فرقة حرس المرور</h1>
           <p>نظام ادارة حوادث المرور -  حرس المرور</p>
@@ -116,7 +104,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               />
             </button>
             {analyticsOpen && (
-              <div style={{ padding: '4px 0 4px 16px' }}>
+              <div className="nav-submenu">
                 {analyticsNav.map((item) => {
                   if (item.to === '/map' && !showMap) return null;
                   return (
@@ -124,8 +112,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       key={item.to}
                       to={item.to}
                       onClick={handleNavClick}
-                      className={`nav-link ${isActive(item.to, false) ? 'active' : ''}`}
-                      style={{ fontSize: 13, padding: '8px 16px', paddingLeft: 32 }}
+                      className={`nav-link nav-sublink ${isActive(item.to, false) ? 'active' : ''}`}
                     >
                       <item.icon size={18} />
                       <span>{item.label}</span>
@@ -179,6 +166,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             </div>
           </div>
+          {canOfferInstall() && !install.installed && (
+            <button className="btn-install" onClick={() => { onClose?.(); requestInstall(); }}>
+              <Download size={14} style={{ marginLeft: 6 }} />
+              <span>تثبيت التطبيق على الجهاز</span>
+            </button>
+          )}
           <button className="btn-logout" onClick={() => { logout(); onClose?.(); }}>
             <LogOut size={14} style={{ marginLeft: 6 }} />
             <span>تسجيل الخروج</span>

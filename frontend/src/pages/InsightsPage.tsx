@@ -12,6 +12,7 @@ import {
   BarChart, Bar, Cell,
 } from 'recharts';
 import { useDisplaySettings } from '../contexts/DisplaySettingsContext';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 
 const TrendIcon = ({ change }: { change: number | null }) => {
   if (change === null) return <Minus size={16} color="var(--text-secondary)" />;
@@ -58,6 +59,7 @@ function getHeatColor(count: number, max: number): string {
 export default function InsightsPage() {
   const contentRef = useRef<HTMLDivElement>(null);
   const { settings } = useDisplaySettings();
+  const isPhone = useMediaQuery(PHONE_QUERY);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [governorates, setGovernorates] = useState<any[]>([]);
@@ -312,7 +314,7 @@ export default function InsightsPage() {
       )}
 
       {/* ── Tab Navigation ── */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#f0f2f5', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+      <div className="tab-bar">
         {[
           { key: 'overview' as const, label: 'نظرة عامة', icon: <BarChart3 size={14} /> },
           { key: 'heatmap' as const, label: 'خريطة حرارية', icon: <Activity size={14} /> },
@@ -341,7 +343,7 @@ export default function InsightsPage() {
         <>
           {/* Anomalies + Time Slots */}
           {(settings.insights.anomalies || settings.insights.timeSlots) && (
-          <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
             {settings.insights.anomalies && (
             <div className="card">
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -408,7 +410,7 @@ export default function InsightsPage() {
 
            {/* Cause Lethality + Weekday */}
            {(settings.insights.causeLethality || settings.insights.weekday) && (
-           <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '3fr 2fr', gap: 20, marginBottom: 20 }}>
+           <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '3fr 2fr', gap: 20, marginBottom: 20 }}>
              {settings.insights.causeLethality && (
              <div className="card">
                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -490,7 +492,7 @@ export default function InsightsPage() {
               <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Route size={17} color="var(--danger)" /> أخطر الطرق
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
                 {d.topRoutes.map((r: any, i: number) => (
                   <div key={i} style={{
                     padding: '12px 14px', borderRadius: 8, background: i === 0 ? '#fff5f5' : '#f8f9fb',
@@ -575,7 +577,7 @@ export default function InsightsPage() {
 
       {/* ── Tab: Brands ── */}
       {activeTab === 'brands' && settings.insights.brands && (
-        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 1fr', gap: 20 }}>
           <div className="card">
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Car size={17} color="var(--danger)" /> الماركات حسب مؤشر الخطورة
@@ -587,7 +589,7 @@ export default function InsightsPage() {
                 <BarChart data={d.brandSeverity} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
-                  <YAxis dataKey="brandName" type="category" width={120} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="brandName" type="category" width={isPhone ? 84 : 120} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow)', direction: 'rtl' }} formatter={(val: any) => [val, 'مؤشر الخطورة']} />
                   <Bar dataKey="severityScore" name="مؤشر الخطورة" radius={[4, 0, 0, 4]}>
                     {d.brandSeverity.map((_: any, i: number) => (

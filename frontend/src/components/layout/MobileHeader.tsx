@@ -8,14 +8,14 @@ interface MobileHeaderProps {
 export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
   return (
     <header className="mobile-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <img src={logo} alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))' }} />
-        <span style={{ fontWeight: 700, fontSize: 16 }}>رئيس فرقة حرس المرور</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <img src={logo} alt="Logo" style={{ width: 52, height: 52, flexShrink: 0, objectFit: 'contain', filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))' }} />
+        <span style={{ fontWeight: 700, fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>رئيس فرقة حرس المرور</span>
       </div>
-      <button 
-        className="mobile-nav-toggle" 
+      <button
+        className="mobile-nav-toggle"
         onClick={onMenuClick}
-        aria-label="Toggle Menu"
+        aria-label="فتح القائمة"
       >
         <Menu size={24} />
       </button>

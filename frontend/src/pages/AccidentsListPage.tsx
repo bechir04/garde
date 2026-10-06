@@ -5,6 +5,7 @@ import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
+import { useMediaQuery, DRAWER_NAV_QUERY } from '../hooks/useMediaQuery';
 
 export default function AccidentsListPage() {
   const { user } = useAuth();
@@ -130,12 +131,8 @@ export default function AccidentsListPage() {
   const totalPages = Math.ceil((data.total || 0) / limit);
   const canEdit = user?.role === 'ADMIN' || user?.role === 'OFFICER';
   const canDelete = user?.role === 'ADMIN';
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
+  // Cards on phones and tablets: the 12-column table is too cramped below desktop width.
+  const isMobile = useMediaQuery(DRAWER_NAV_QUERY);
 
   return (
     <div>
@@ -212,10 +209,10 @@ export default function AccidentsListPage() {
         {loading ? <div className="spinner" /> : (
           <>
             {isMobile ? (
-              /* Mobile card view */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              /* Card view (phones and tablets): one column on phones, more as width allows */
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: 10 }}>
                 {canDelete && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#f8f9fb', borderRadius: 'var(--radius-sm)', marginBottom: 4 }}>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#f8f9fb', borderRadius: 'var(--radius-sm)', marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input
                         type="checkbox"
@@ -234,14 +231,17 @@ export default function AccidentsListPage() {
                   </div>
                 )}
                 {rows.length === 0 && (
-                  <div className="empty-state">لا توجد حوادث مطابقة للبحث</div>
+                  <div className="empty-state" style={{ gridColumn: '1 / -1' }}>لا توجد حوادث مطابقة للبحث</div>
                 )}
-                {rows.map((a: any, idx: number) => (
+                {rows.map((a: any, idx: number) => {
+                  const isChecked = selectAll || selected.has(a.id);
+                  return (
                   <div key={a.id} style={{
-                    background: selected.has(a.id) ? 'rgba(26,82,118,0.05)' : '#fff',
-                    border: `1px solid ${selected.has(a.id) ? 'rgba(26,82,118,0.2)' : 'var(--border)'}`,
+                    background: isChecked ? 'rgba(26,82,118,0.05)' : '#fff',
+                    border: `1px solid ${isChecked ? 'rgba(26,82,118,0.2)' : 'var(--border)'}`,
                     borderRadius: 'var(--radius-sm)',
                     padding: '12px 14px',
+                    minWidth: 0,
                   }}>
                     {/* Header row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -249,8 +249,15 @@ export default function AccidentsListPage() {
                         {canDelete && (
                           <input
                             type="checkbox"
-                            checked={selected.has(a.id)}
-                            onChange={() => toggleOne(a.id)}
+                            checked={isChecked}
+                            onChange={() => {
+                              if (selectAll) {
+                                setSelectAll(false);
+                                setSelected(new Set(allPageIds.filter((id: string) => id !== a.id)));
+                              } else {
+                                toggleOne(a.id);
+                              }
+                            }}
                             style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--primary)' }}
                           />
                         )}
@@ -281,7 +288,7 @@ export default function AccidentsListPage() {
                     </div>
                     {/* Details */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', fontSize: 12 }}>
-                      <div style={{ color: 'var(--text-secondary)' }}>الولاية: <strong style={{ color: 'var(--text-primary)' }}>{a.governorate?.nameAr || '—'}</strong></div>
+                      <div style={{ color: 'var(--text-secondary)' }}>الولاية: <strong style={{ color: 'var(--text-primary)' }}>{a.governorate?.nameAr || '—'}</strong>{a.city?.nameAr ? <span> — {a.city.nameAr}</span> : null}</div>
                       <div style={{ color: 'var(--text-secondary)' }}>السبب: <span className="tag" style={{ fontSize: 11 }}>{a.cause?.nameAr || '—'}</span></div>
                       {a.route && <div style={{ color: 'var(--text-secondary)', gridColumn: '1/-1' }}>الطريق: <strong style={{ color: 'var(--text-primary)' }}>{a.route}</strong></div>}
                       {a.roadCondition && <div style={{ color: 'var(--text-secondary)', gridColumn: '1/-1' }}>حالة الطريق: <strong style={{ color: 'var(--text-primary)' }}>{a.roadCondition}</strong></div>}
@@ -292,7 +299,8 @@ export default function AccidentsListPage() {
                       <span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>جرحى: {a.injuriesCount}</span>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               /* Desktop table view */

@@ -68,7 +68,7 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 
   return (
     <div style={{
-      position: 'fixed', top: 16, left: 16, right: 16, zIndex: 99999,
+      position: 'fixed', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16, right: 16, zIndex: 99999,
       display: 'flex', flexDirection: 'column', gap: 8,
       pointerEvents: 'none',
       maxWidth: 420,

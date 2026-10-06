@@ -12,6 +12,7 @@ import {
 import type { AnalyticsFilters } from '../api/services';
 import { ArrowLeft, Filter, Calendar, MapPin, Building2, RotateCcw, TrendingDown, BarChart3 } from 'lucide-react';
 import { SIDI_BOUZID_MUNICIPALITIES } from '../constants/municipalities';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 
 const COLORS = ['#1a5276','#e67e22','#27ae60','#e74c3c','#8e44ad','#2980b9','#d35400','#16a085','#c0392b','#2c3e50'];
 
@@ -27,6 +28,7 @@ const chartConfig: Record<string, { title: string; api: string; color: string }>
 export default function ChartDetailPage() {
   const { chartType } = useParams<{ chartType: string }>();
   const navigate = useNavigate();
+  const isPhone = useMediaQuery(PHONE_QUERY);
   const config = chartConfig[chartType || ''];
   if (!config) return <div style={{ padding: 40, textAlign: 'center' }}>الرسم غير موجود</div>;
 
@@ -141,10 +143,10 @@ export default function ChartDetailPage() {
       return (
         <>
           <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-            <div style={{ flex: '0 0 320px' }}>
-              <ResponsiveContainer width={320} height={320}>
+            <div style={{ flex: isPhone ? '1 1 100%' : '0 0 320px', minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height={isPhone ? 260 : 320}>
                 <PieChart>
-                  <Pie data={pageData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={120} innerRadius={50} paddingAngle={2}>
+                  <Pie data={pageData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={isPhone ? 100 : 120} innerRadius={isPhone ? 42 : 50} paddingAngle={2}>
                     {pageData.map((_, i) => <Cell key={i} fill={COLORS[(startIdx + i) % COLORS.length]} />)}
                   </Pie>
                   <Tooltip formatter={(value: any, name: any) => [value + ' حادث', name]} contentStyle={{ direction: 'rtl', fontFamily: 'inherit', fontSize: 13, borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow)' }} />
@@ -205,7 +207,7 @@ export default function ChartDetailPage() {
           <BarChart data={data} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
             <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={{ stroke: '#eee' }} tickLine={false} />
-            <YAxis dataKey="name" type="category" width={160} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
+            <YAxis dataKey="name" type="category" width={isPhone ? 96 : 160} orientation="right" interval={0} tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }} axisLine={false} tickLine={false} />
             <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: 'var(--shadow-lg)', direction: 'rtl', fontFamily: 'inherit' }} />
             <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
             <Bar dataKey="count" fill={config.color} radius={[4, 0, 0, 4]} name="عدد الحوادث" barSize={18} />

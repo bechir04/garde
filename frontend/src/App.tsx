@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { DisplayProvider } from './contexts/DisplaySettingsContext';
 import { ToastProvider } from './contexts/ToastContext';
 import AppLayout from './components/layout/AppLayout';
+import PwaUi from './pwa/PwaUi';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
@@ -47,6 +48,7 @@ export default function App() {
             </Routes>
             </Suspense>
           </BrowserRouter>
+          <PwaUi />
         </DisplayProvider>
       </ToastProvider>
     </AuthProvider>
