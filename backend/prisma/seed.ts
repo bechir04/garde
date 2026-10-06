@@ -4,11 +4,14 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Truncate users and cascade to all dependent tables
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE users CASCADE`);
-  console.log('All users deleted (cascade).');
+  // Create the admin user only if it doesn't exist yet. Existing data is
+  // never touched, so this is safe to run against the production database.
+  const existing = await prisma.user.findUnique({ where: { username: 'mohamed' } });
+  if (existing) {
+    console.log('Admin user already exists, skipping seed.');
+    return;
+  }
 
-  // Create admin user
   const passwordHash = await bcrypt.hash('mohamed123', 10);
   const admin = await prisma.user.create({
     data: {
@@ -20,7 +23,7 @@ async function main() {
     },
   });
 
-  console.log('Admin user created:', admin);
+  console.log('Admin user created:', admin.username);
 }
 
 main()
