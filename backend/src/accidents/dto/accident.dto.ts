@@ -1,4 +1,4 @@
-import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, Min, Matches } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, Min, Matches, MaxLength } from 'class-validator';
 
 export class CreateAccidentDto {
   @IsDateString()
@@ -24,6 +24,11 @@ export class CreateAccidentDto {
 
   @IsOptional()
   kilometrePoint?: number;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(300)
+  roadCondition?: string;
 
   @IsInt()
   @IsNotEmpty()
@@ -74,6 +79,11 @@ export class UpdateAccidentDto {
 
   @IsOptional()
   kilometrePoint?: number;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(300)
+  roadCondition?: string;
 
   @IsInt()
   @IsOptional()

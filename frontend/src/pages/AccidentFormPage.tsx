@@ -5,6 +5,18 @@ import { Save, ArrowRight, Plus, X } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 import { useToast } from '../contexts/ToastContext';
 
+const ROAD_CONDITION_SUGGESTIONS = [
+  'طريق جافة',
+  'طريق مبللة',
+  'طريق زلقة',
+  'طريق بها حفر',
+  'طريق في طور الأشغال',
+  'طريق غير معبدة',
+  'إنارة منعدمة',
+  'ضباب وانعدام الرؤية',
+  'منعرج خطير',
+];
+
 export default function AccidentFormPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -22,7 +34,7 @@ export default function AccidentFormPage() {
 
   const [form, setForm] = useState({
     accidentDate: '', accidentTime: '', governorateId: '',
-    cityId: '', route: '', kilometrePoint: '', causeId: '',
+    cityId: '', route: '', kilometrePoint: '', roadCondition: '', causeId: '',
     vehicleBrand1Id: '', vehicleBrand2Id: '',
     deathsCount: '0', injuriesCount: '0', description: '',
   } as Record<string, string>);
@@ -40,6 +52,7 @@ export default function AccidentFormPage() {
             cityId: a.cityId ? String(a.cityId) : '',
             route: a.route || '',
             kilometrePoint: a.kilometrePoint != null ? String(a.kilometrePoint) : '',
+            roadCondition: a.roadCondition || '',
             causeId: String(a.causeId || ''),
             vehicleBrand1Id: a.vehicleBrand1Id ? String(a.vehicleBrand1Id) : '',
             vehicleBrand2Id: a.vehicleBrand2Id ? String(a.vehicleBrand2Id) : '',
@@ -84,6 +97,7 @@ export default function AccidentFormPage() {
       cityId: form.cityId ? parseInt(form.cityId) : undefined,
       route: form.route || undefined,
       kilometrePoint: form.kilometrePoint ? parseFloat(form.kilometrePoint) : undefined,
+      roadCondition: form.roadCondition.trim() || undefined,
       causeId: parseInt(form.causeId),
       vehicleBrand1Id: form.vehicleBrand1Id ? parseInt(form.vehicleBrand1Id) : undefined,
       vehicleBrand2Id: form.vehicleBrand2Id ? parseInt(form.vehicleBrand2Id) : undefined,
@@ -180,6 +194,21 @@ export default function AccidentFormPage() {
               <label className="form-label">النقطة الكيلومترية</label>
               <input type="number" step="0.01" className="form-input" value={form.kilometrePoint} onChange={(e) => handleChange('kilometrePoint', e.target.value)} placeholder="مثال: 45.5" />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">حالة الطريق</label>
+            <input
+              className="form-input"
+              list="road-condition-suggestions"
+              maxLength={300}
+              value={form.roadCondition}
+              onChange={(e) => handleChange('roadCondition', e.target.value)}
+              placeholder="اكتب حالة الطريق أو اختر من الاقتراحات، مثال: طريق مبللة"
+            />
+            <datalist id="road-condition-suggestions">
+              {ROAD_CONDITION_SUGGESTIONS.map((s) => <option key={s} value={s} />)}
+            </datalist>
           </div>
 
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, marginTop: 24, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>

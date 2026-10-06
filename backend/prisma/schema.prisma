@@ -90,6 +90,7 @@ model Accident {
   city            City?         @relation(fields: [cityId], references: [id])
   route           String?       @db.VarChar(300)
   kilometrePoint  Decimal?      @map("kilometre_point") @db.Decimal(10, 2)
+  roadCondition   String?       @map("road_condition") @db.VarChar(300)
   causeId         Int           @map("cause_id")
   cause           AccidentCause @relation(fields: [causeId], references: [id])
   vehicleBrand1Id Int?          @map("vehicle_brand1_id")

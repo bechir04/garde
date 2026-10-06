@@ -42,6 +42,7 @@ export class AccidentsService {
           OR: [
             { route: { contains: search, mode: 'insensitive' } },
             { description: { contains: search, mode: 'insensitive' } },
+            { roadCondition: { contains: search, mode: 'insensitive' } },
             { governorate: { nameAr: { contains: search, mode: 'insensitive' } } },
           ],
         },
@@ -88,6 +89,7 @@ export class AccidentsService {
         cityId: dto.cityId,
         route: dto.route,
         kilometrePoint: dto.kilometrePoint,
+        roadCondition: dto.roadCondition,
         causeId: dto.causeId,
         vehicleBrand1Id: dto.vehicleBrand1Id,
         vehicleBrand2Id: dto.vehicleBrand2Id,

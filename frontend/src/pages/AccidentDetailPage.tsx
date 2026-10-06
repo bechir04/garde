@@ -50,6 +50,7 @@ export default function AccidentDetailPage() {
             <InfoRow label="الولاية" value={a.governorate?.nameAr || '—'} />
             <InfoRow label="الطريق" value={a.route || '—'} />
             <InfoRow label="النقطة الكيلومترية" value={a.kilometrePoint != null ? `${a.kilometrePoint} كم` : '—'} />
+            <InfoRow label="حالة الطريق" value={a.roadCondition || '—'} />
           </div>
         </div>
 

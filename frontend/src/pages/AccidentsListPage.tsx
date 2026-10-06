@@ -170,7 +170,7 @@ export default function AccidentsListPage() {
               <Search size={16} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input
                 className="form-input"
-                placeholder="بحث في الطريق أو الوصف..."
+                placeholder="بحث في الطريق أو حالة الطريق أو الوصف..."
                 value={search}
                 onChange={(e) => updateFilter('search', e.target.value)}
                 style={{ paddingRight: 36 }}
@@ -284,6 +284,7 @@ export default function AccidentsListPage() {
                       <div style={{ color: 'var(--text-secondary)' }}>الولاية: <strong style={{ color: 'var(--text-primary)' }}>{a.governorate?.nameAr || '—'}</strong></div>
                       <div style={{ color: 'var(--text-secondary)' }}>السبب: <span className="tag" style={{ fontSize: 11 }}>{a.cause?.nameAr || '—'}</span></div>
                       {a.route && <div style={{ color: 'var(--text-secondary)', gridColumn: '1/-1' }}>الطريق: <strong style={{ color: 'var(--text-primary)' }}>{a.route}</strong></div>}
+                      {a.roadCondition && <div style={{ color: 'var(--text-secondary)', gridColumn: '1/-1' }}>حالة الطريق: <strong style={{ color: 'var(--text-primary)' }}>{a.roadCondition}</strong></div>}
                     </div>
                     {/* Badges */}
                     <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
@@ -317,6 +318,7 @@ export default function AccidentsListPage() {
                       <th>الولاية</th>
                       <th>المعتمدية</th>
                       <th>الطريق</th>
+                      <th>حالة الطريق</th>
                       <th>السبب</th>
                       <th>وفيات</th>
                       <th>جرحى</th>
@@ -349,6 +351,7 @@ export default function AccidentsListPage() {
                         <td>{a.governorate?.nameAr || '—'}</td>
                         <td>{a.city?.nameAr || '—'}</td>
                         <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.route || '—'}</td>
+                        <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }} title={a.roadCondition || undefined}>{a.roadCondition || '—'}</td>
                         <td><span className="tag">{a.cause?.nameAr || '—'}</span></td>
                         <td><span className={`badge ${a.deathsCount > 0 ? 'badge-danger' : 'badge-success'}`}>{a.deathsCount}</span></td>
                         <td><span className={`badge ${a.injuriesCount > 0 ? 'badge-warning' : 'badge-success'}`}>{a.injuriesCount}</span></td>
@@ -366,7 +369,7 @@ export default function AccidentsListPage() {
                       </tr>
                     ))}
                     {rows.length === 0 && (
-                      <tr><td colSpan={canDelete ? 11 : 10} className="empty-state">لا توجد حوادث مطابقة للبحث</td></tr>
+                      <tr><td colSpan={canDelete ? 12 : 11} className="empty-state">لا توجد حوادث مطابقة للبحث</td></tr>
                     )}
                   </tbody>
                 </table>
